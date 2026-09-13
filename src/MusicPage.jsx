@@ -640,19 +640,48 @@ export default function MusicPage() {
           .mu-disc { width: 96px; height: 96px; }
           .mu-panel { padding-right: 60px; }
         }
+        /* Phones: a simple column — title, scrolling track list, compact player. */
         @media (max-width: 720px) {
-          .mu-head { top: 3vh; }
-          .mu-head-title { font-size: 44px; }
-          .mu-list { top: 14vh; max-height: 40vh; width: 92vw; gap: 4px; }
-          .mu-track-btn { height: 52px; padding: 0 20px 0 14px; gap: 10px; }
-          .mu-track.current .mu-track-btn { height: 60px; }
-          .mu-track-title { font-size: 20px; letter-spacing: 2px; }
-          .mu-track-len { display: none; }
-          .mu-stage { top: auto; bottom: calc(10vh + env(safe-area-inset-bottom, 0px)); transform: none; left: 2vw; right: 2vw; width: auto; }
-          .mu-track-btn { min-height: 48px; }
-          .mu-panel { padding: 16px 44px 16px 16px; gap: 12px; }
+          .mu-screen {
+            display: flex;
+            flex-direction: column;
+            padding: calc(10px + env(safe-area-inset-top, 0px)) 3vw calc(66px + env(safe-area-inset-bottom, 0px));
+            box-sizing: border-box;
+          }
+          .mu-head { position: static; transform: none; margin: 0 0 8px 2px; gap: 0; }
+          .mu-head-eyebrow { font-size: 11px; }
+          .mu-head-title { font-size: 38px; letter-spacing: 3px; }
+          .mu-list {
+            position: static;
+            flex: 1 1 auto;
+            min-height: 0;
+            max-height: none;
+            width: 100%;
+            transform: none;
+            padding: 6px 8px 6px 0;
+            gap: 4px;
+          }
+          .mu-track-btn { height: 46px; min-height: 46px; padding: 0 18px 0 12px; gap: 10px; }
+          .mu-track.current .mu-track-btn { height: 54px; }
+          .mu-track-num { font-size: 22px; min-width: 28px; }
+          .mu-track-title { font-size: 19px; letter-spacing: 2px; }
+          .mu-track-len { font-size: 14px; }
+          .mu-stage { position: relative; top: auto; right: auto; transform: none; width: 100%; margin-top: 10px; flex: 0 0 auto; }
+          .mu-backplate { transform: translate(8px, 8px); }
+          .mu-panel { padding: 10px 34px 10px 12px; gap: 8px; }
+          .mu-now { gap: 12px; }
           .mu-disc { display: none; }
-          .mu-viz { height: 48px; }
+          .mu-now-text { gap: 2px; }
+          .mu-now-eyebrow { font-size: 11px; letter-spacing: 3px; }
+          .mu-now-title { font-size: 22px; letter-spacing: 1px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+          .mu-now-album { display: none; }
+          .mu-viz { height: 28px; padding: 4px 8px 0; }
+          .mu-progress { height: 10px; }
+          .mu-progress-head { height: 16px; top: -3px; }
+          .mu-times { font-size: 12px; margin-top: -4px; }
+          .mu-controls { gap: 8px; }
+          .mu-btn { width: 38px; height: 38px; font-size: 14px; }
+          .mu-btn.primary { width: 50px; height: 42px; font-size: 17px; }
           .mu-volume { display: none; }
           .mu-footer { display: none; }
         }
