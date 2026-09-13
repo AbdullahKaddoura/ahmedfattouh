@@ -43,7 +43,7 @@ const REVEAL_CONTENT = [
     eyebrow: "Top picks",
     upper: [
       { title: "Dragon Ball Z", meta: "1989 · Toei Animation", poster: poster("dbz"), alt: "Dragon Ball Z season one cover" },
-      { title: "Evangelion", meta: "1995 · Gainax", poster: poster("evangelion"), alt: "The End of Evangelion poster" },
+      { title: "Neon Genesis Evangelion", meta: "1995 · Gainax", poster: poster("evangelion"), alt: "Neon Genesis Evangelion poster" },
       { title: "Chainsaw Man", meta: "2022 · MAPPA", poster: poster("chainsaw-man"), alt: "Chainsaw Man cover art" },
       { title: "Serial Experiments Lain", meta: "1998 · Triangle Staff", poster: poster("lain"), alt: "Serial Experiments Lain DVD cover" },
       { title: "Steven Universe", meta: "2013 · Cartoon Network", poster: poster("steven-universe"), alt: "Steven Universe: The Movie poster" },
@@ -960,8 +960,6 @@ export default function AboutMe() {
             clip-path: polygon(0 0, 100% 0, calc(100% - 28px) 100%, 0 100%);
           }
           .am-reveal-panel { padding: 16px 40px 16px 16px; gap: 10px; }
-          .am-main-portrait-shell { right: -24vw; width: 48vw; opacity: 0.5; }
-          .am-main-portrait-shell.mounted { opacity: 0.5; }
           .am-tab-navigation { gap: 4px; flex-wrap: wrap; }
           .am-tab-button { font-size: 12px; padding: 6px 10px; min-height: 32px; }
           .am-reveal-upper-bar { padding: 14px 22px 14px 14px; }
@@ -974,10 +972,43 @@ export default function AboutMe() {
           .am-favorites-content .am-reveal-upper-line { font-size: 16px; }
           .am-right-nav .am-nav-btn { font-size: 40px; }
         }
+        /* Portrait phones: character banner on top, panel below, big poster, no LB/RB. */
         @media (max-width: 720px) {
-          .am-tab-button { min-height: 40px; }
-          .am-favorites-content .am-reveal-upper-line { min-height: 44px; }
-          .am-right-nav .am-nav-arrow { padding: 8px 10px; font-size: 24px; }
+          .am-right-nav { display: none; }
+          .am-main-portrait-shell,
+          .am-main-portrait-shell.mounted {
+            top: 0; right: 0; left: 0;
+            width: 100vw; height: 34vh;
+            opacity: 1;
+            transform: none;
+            animation: none;
+            box-shadow: 0 6px 0 var(--p3-red-accent);
+            z-index: 15;
+          }
+          .am-main-portrait { transform: none; object-position: 50% 12%; }
+          .am-reveal-frame { top: auto; bottom: calc(10px + env(safe-area-inset-bottom, 0px)); transform: none; left: 2vw; width: 96vw; max-height: 63vh; }
+          .am-reveal-panel { min-height: 0; max-height: 63vh; padding: 12px 30px 12px 14px; gap: 10px; }
+          .am-reveal-head { flex-direction: column; align-items: flex-start; gap: 8px; padding-bottom: 8px; }
+          .am-reveal-eyebrow { display: none; }
+          .am-reveal-title { font-size: 30px; letter-spacing: 2px; }
+          .am-tab-navigation { gap: 6px; }
+          .am-tab-button { font-size: 12px; padding: 6px 10px; min-height: 40px; }
+          .am-reveal-upper-bar { min-height: 0; }
+          .am-bio-content { padding: 12px 14px; }
+          .am-bio-content .am-reveal-upper-line { font-size: 15px; line-height: 1.5; }
+          .am-bio-content .am-reveal-upper-line:first-child { font-size: 16px; }
+          .am-favorites-content { padding: 12px 14px; }
+          .am-gallery { grid-template-columns: 1fr; gap: 12px; }
+          .am-spotlight { order: -1; width: 100%; flex-direction: row; align-items: flex-start; gap: 14px; }
+          .am-spotlight-backplate, .am-spotlight-frame { width: 40vw; aspect-ratio: 2 / 3; }
+          .am-spotlight-caption { padding-top: 6px; padding-bottom: 0; }
+          .am-spotlight-title { font-size: 20px; }
+          .am-reveal-list { grid-template-columns: 1fr; }
+          .am-favorites-content .am-reveal-upper-line { font-size: 16px; padding: 6px 8px; min-height: 44px; }
+          .am-reveal-thumb { width: 30px; height: 40px; }
+          .am-reveal-lower-bar { min-height: 46px; font-size: 16px; }
+          .am-reveal-lower-icon { width: 34px; height: 34px; }
+          .am-reveal-lower-icon > svg { width: 18px; height: 18px; }
         }
         /* Phones held sideways: very little height, so compress the panel and let it scroll. */
         @media (max-height: 520px) {

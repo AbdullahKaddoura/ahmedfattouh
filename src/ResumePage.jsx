@@ -126,7 +126,9 @@ export default function ResumePage() {
               onClick={() => setSelected((s) => (s === i ? null : i))}
               aria-pressed={isSelected}
             >
+              <span className="fp-node-red" aria-hidden="true" />
               <span className="fp-node-face">
+                <span className="fp-node-num" aria-hidden="true">{String(i + 1).padStart(2, "0")}</span>
                 <span className="fp-node-label">{node.label}</span>
               </span>
               <span className="fp-node-sub" aria-hidden="true">{node.jp}</span>
@@ -288,29 +290,69 @@ export default function ResumePage() {
           transition: opacity 0.4s ease, transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
           transform-origin: center;
         }
-        .fp-node.from-left   { transform: translateX(-70px) skewX(-6deg); }
-        .fp-node.from-right  { transform: translateX(70px) skewX(-6deg); }
-        .fp-node.from-top    { transform: translateY(-50px) skewX(-6deg); }
-        .fp-node.from-bottom { transform: translateY(50px) skewX(-6deg); }
-        .fp-node.mounted { opacity: 1; transform: translate(0, 0) skewX(-6deg); }
+        .fp-node.from-left   { transform: translateX(-70px); }
+        .fp-node.from-right  { transform: translateX(70px); }
+        .fp-node.from-top    { transform: translateY(-50px); }
+        .fp-node.from-bottom { transform: translateY(50px); }
+        .fp-node.mounted { opacity: 1; transform: translate(0, 0); }
 
+        /* Same bar language as the About / Socials / Music tabs: angled black bar,
+           cyan fill sweeping in when active, red underlay peeking out above. */
+        .fp-node-red {
+          position: absolute;
+          top: -7px; left: 0;
+          width: 100%;
+          height: 100%;
+          background: var(--p3-red-accent);
+          clip-path: polygon(50% 0, 100% 0, 100% 100%, calc(50% - 10px) 100%);
+          opacity: 0;
+          transition: opacity 0.2s ease;
+        }
         .fp-node-face {
-          display: block;
           position: relative;
-          padding: 12px 34px 10px 30px;
-          background: #05070c;
-          color: #fff;
-          box-shadow: 0 0 0 1px rgba(255,255,255,0.08), 6px 6px 0 rgba(0, 0, 0, 0.35);
-          transition: background 0.18s ease, color 0.18s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
+          display: flex;
+          align-items: center;
+          gap: 14px;
+          height: 58px;
+          padding: 0 36px 0 22px;
+          background: #111;
+          color: rgba(255, 255, 255, 0.88);
+          clip-path: polygon(0 0, 100% 0, calc(100% - 14px) 100%, 0 100%);
+          box-shadow: 0 6px 24px rgba(0, 0, 0, 0.65);
+          overflow: hidden;
+          transition: color 0.18s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .fp-node-face::before {
+          content: "";
+          position: absolute;
+          inset: 0;
+          background: var(--p3-blue-light);
+          clip-path: polygon(100% 0, 100% 0, calc(100% - 32px) 100%, calc(100% - 32px) 100%);
+          transition: clip-path 0.35s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .fp-node-face::after {
+          content: "";
+          position: absolute;
+          bottom: 0; left: 0; right: 0;
+          height: 6px;
+          background: linear-gradient(180deg, rgba(0,0,0,0) 0%, rgba(0,0,0,0.55) 100%);
+          pointer-events: none;
+        }
+        .fp-node-num, .fp-node-label { position: relative; z-index: 1; }
+        .fp-node-num {
+          font-family: 'Bebas Neue', sans-serif;
+          font-size: 24px;
+          letter-spacing: 1px;
+          opacity: 0.6;
+          line-height: 1;
         }
         .fp-node-label {
           display: block;
-          font-family: 'Michroma', sans-serif;
-          font-size: clamp(13px, 1.35vw, 21px);
-          letter-spacing: 2px;
+          font-family: 'Bebas Neue', sans-serif;
+          font-size: clamp(20px, 1.8vw, 28px);
+          letter-spacing: 4px;
           line-height: 1;
           white-space: nowrap;
-          transform: skewX(6deg);
         }
         /* subtitle bar that pops out under the box on hover / focus */
         .fp-node-sub {
@@ -349,22 +391,25 @@ export default function ResumePage() {
           100% { opacity: 0; transform: scale(1.35); }
         }
         .fp-node.active { z-index: 2; }
+        .fp-node.active .fp-node-face,
+        .fp-node.selected .fp-node-face { color: var(--p3-text-on-light); }
+        .fp-node.active .fp-node-face::before,
+        .fp-node.selected .fp-node-face::before {
+          clip-path: polygon(0 0, 100% 0, calc(100% - 14px) 100%, 0 100%);
+        }
+        .fp-node.active .fp-node-red,
+        .fp-node.selected .fp-node-red { opacity: 1; }
         .fp-node.active .fp-node-face {
-          background: #fff;
-          color: #05070c;
-          box-shadow: 0 0 0 2px #05070c, 8px 8px 0 rgba(0, 0, 0, 0.55), 0 0 28px rgba(255,255,255,0.45);
           animation: fp-pop 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+          box-shadow: 10px 8px 0 #d63232;
         }
         .fp-node.active .fp-node-sub { opacity: 1; transform: translateY(0) scaleX(1); }
         .fp-node.active .fp-node-ping { animation: fp-ping 0.6s ease-out forwards; }
-        .fp-node.selected .fp-node-face {
-          background: #fff;
-          color: #05070c;
-          box-shadow: 0 0 0 2px #05070c, 8px 8px 0 #c4001a;
-        }
+        .fp-node.selected .fp-node-face { box-shadow: 10px 8px 0 #d63232; }
         .fp-node.selected .fp-node-sub { opacity: 1; transform: translateY(0) scaleX(1); }
+        .fp-node.active .fp-node-num, .fp-node.selected .fp-node-num { opacity: 0.8; }
         .fp-node:focus-visible { outline: 0; }
-        .fp-node:focus-visible .fp-node-face { box-shadow: 0 0 0 3px #fff, 0 0 0 5px #05070c; }
+        .fp-node:focus-visible .fp-node-face { outline: 3px solid #fff; outline-offset: -4px; }
 
         /* ── Date + moon readout (bottom-right) ── */
         .fp-readout {
@@ -430,8 +475,9 @@ export default function ResumePage() {
             gap: 14px;
           }
           .fp-node { position: static !important; width: 100%; }
-          .fp-node-face { padding: 14px 18px 12px; text-align: center; }
-          .fp-node-label { font-size: 15px; letter-spacing: 2px; }
+          .fp-node-face { height: 54px; padding: 0 24px 0 16px; }
+          .fp-node-label { font-size: 20px; letter-spacing: 3px; }
+          .fp-node-num { font-size: 20px; }
           .fp-node-sub { right: 8px; }
           .fp-node.active .fp-node-face { animation: none; transform: scale(1.03); }
           .fp-lines { opacity: 0.45; }
@@ -445,8 +491,9 @@ export default function ResumePage() {
         }
         /* Phones sideways: keep the scatter but tighten it. */
         @media (max-height: 520px) and (min-width: 721px) {
-          .fp-node-face { padding: 8px 20px 6px 16px; }
-          .fp-node-label { font-size: 13px; }
+          .fp-node-face { height: 44px; padding: 0 22px 0 14px; gap: 10px; }
+          .fp-node-label { font-size: 17px; letter-spacing: 3px; }
+          .fp-node-num { font-size: 18px; }
           .fp-command { top: 3vh; }
           .fp-command-title { font-size: 14px; }
           .fp-command-sub { font-size: 11px; }

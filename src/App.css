@@ -25,6 +25,11 @@ body {
   object-fit: cover;
 }
 
+/* Portrait phones crop the wide menu video to its middle; the character is on the left. */
+@media (max-width: 720px) and (orientation: portrait) {
+  .menu-bg-video { object-position: 22% 50%; }
+}
+
 #main {
   width: 100vw;
   height: 100vh;

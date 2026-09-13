@@ -21,6 +21,7 @@ function BackgroundVideo({ intro, loop, ...props }) {
     <div style={{ position: 'fixed', inset: 0, zIndex: -1, background: '#000' }}>
       <video
         {...props}
+        className="menu-bg-video"
         src={intro}
         autoPlay
         muted
@@ -35,6 +36,7 @@ function BackgroundVideo({ intro, loop, ...props }) {
       />
       <video
         {...props}
+        className="menu-bg-video"
         src={loop}
         autoPlay
         loop
