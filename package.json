@@ -9,6 +9,7 @@
     "build:watch": "node scripts/watch-build.mjs",
     "lint": "eslint .",
     "preview": "vite preview",
+    "test": "node --test",
     "start": "node index.js"
   },
   "dependencies": {
@@ -16,6 +17,7 @@
     "framer-motion": "^12.38.0",
     "react": "^19.2.4",
     "react-dom": "^19.2.4",
+    "react-icons": "^5.7.0",
     "react-router-dom": "^7.14.0"
   },
   "devDependencies": {

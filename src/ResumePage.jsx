@@ -1,593 +1,438 @@
-import { useEffect, useState } from "react";
+import { useEffect, useLayoutEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-const ITEMS = [
-  { id: "i", badge: "I", title: "GITHUB", subtitle: "Repositories / Activity", rank: 3 },
-  { id: "ii", badge: "II", title: "SKILLS", subtitle: "Languages & Frameworks", rank: 4 },
-  { id: "iii", badge: "III", title: "PROJECTS", subtitle: "Featured Work", rank: 5 },
-  { id: "iv", badge: "IV", title: "CONTRIBUTIONS", subtitle: "Community Impact", rank: 2 },
+const BG_VIDEO = new URL("../music/vid1.mp4", import.meta.url).href;
+
+// Placeholder squares. Names, subtitles, and positions are easy to swap once the
+// real content is decided. `x` / `y` are viewport percentages for the box's top-left.
+const NODES = [
+  { id: "education", label: "EDUCATION", jp: "教育", x: 56, y: 14, from: "top" },
+  { id: "skills", label: "SKILLS", jp: "スキル", x: 27, y: 25, from: "left" },
+  { id: "experience", label: "EXPERIENCE", jp: "経験", x: 68, y: 40, from: "right" },
+  { id: "ambitions", label: "AMBITIONS", jp: "野望", x: 24, y: 52, from: "left" },
+  { id: "timeline", label: "TIMELINE", jp: "年表", x: 50, y: 70, from: "bottom" },
 ];
 
-export default function ResumePage({ src }) {
+// Two guide lines echoing the reference: a white one from top-left toward the
+// eye, a thin black one from bottom-left rising to the right. Units are % of screen.
+const LINES = [
+  { id: "white", x1: 6, y1: 11, x2: 66, y2: 50, stroke: "#f4f8ff", width: 3, delay: 0.15 },
+  { id: "black", x1: 12, y1: 95, x2: 72, y2: 42, stroke: "#05070c", width: 1.5, delay: 0.3 },
+];
+
+function moonPhaseLabel(date) {
+  const synodic = 29.530588853;
+  const known = Date.UTC(2000, 0, 6, 18, 14); // reference new moon
+  const days = (date.getTime() - known) / 86400000;
+  const phase = ((days % synodic) + synodic) % synodic;
+  if (phase < 1.85) return "NEW MOON";
+  if (phase < 12.9) return "WAXING";
+  if (phase < 16.6) return "FULL MOON";
+  return "WANING";
+}
+
+export default function ResumePage() {
   const navigate = useNavigate();
-  const [active, setActive] = useState(0);
   const [mounted, setMounted] = useState(false);
-  const [repos, setRepos] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [hovered, setHovered] = useState(null);
+  const [selected, setSelected] = useState(null);
+  const [cursor, setCursor] = useState(0);
+  const [keyNav, setKeyNav] = useState(false);
+  const [size, setSize] = useState({ w: 1600, h: 900 });
 
-  useEffect(() => {
-    const fetchGitHubData = async () => {
-      try {
-        const response = await fetch('https://api.github.com/users/MdHu55a1n/repos?sort=updated&per_page=4');
-        const data = await response.json();
-        const formattedRepos = data.map((repo, idx) => ({
-          index: String(idx + 1).padStart(2, '0'),
-          title: repo.name,
-          status: repo.language || 'TypeScript'
-        }));
-        setRepos(formattedRepos);
-      } catch (error) {
-        console.error('Error fetching GitHub data:', error);
-        setRepos([
-          { index: "01", title: "AI/ML Project", status: "Python" },
-          { index: "02", title: "Web App", status: "React" },
-          { index: "03", title: "Data Analysis", status: "Python" },
-          { index: "04", title: "Portfolio", status: "React" },
-        ]);
-      }
-      setLoading(false);
-    };
-    fetchGitHubData();
+  useLayoutEffect(() => {
+    const measure = () => setSize({ w: window.innerWidth, h: window.innerHeight });
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
   }, []);
 
   useEffect(() => {
-    const v = document.querySelectorAll('video');
-    v.forEach(video => {
-      video.play().catch(() => { });
-    });
+    document.querySelectorAll("video").forEach((v) => v.play().catch(() => { }));
   }, []);
 
   useEffect(() => {
-    const t = setTimeout(() => setMounted(true), 80);
+    const t = setTimeout(() => setMounted(true), 120);
     return () => clearTimeout(t);
   }, []);
 
   useEffect(() => {
     const onKey = (e) => {
-      if (e.key === "ArrowUp") setActive((i) => Math.max(0, i - 1));
-      if (e.key === "ArrowDown") setActive((i) => Math.min(ITEMS.length - 1, i + 1));
-      if (e.key === "ArrowLeft") navigate(-1);
-      if (e.key === "Escape" || e.key === "Backspace") navigate(-1);
+      if (e.target.closest("button") && (e.key === "Enter" || e.key === " ")) return;
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") { setKeyNav(true); setCursor((i) => (i + 1) % NODES.length); }
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") { setKeyNav(true); setCursor((i) => (i - 1 + NODES.length) % NODES.length); }
+      if (e.key === "Enter") setSelected((s) => (s === cursor ? null : cursor));
+      if (e.key === "Escape" || e.key === "Backspace") navigate("/");
     };
-
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [navigate]);
+  }, [cursor, navigate]);
+
+  const now = new Date();
+  const dateLabel = `${now.getMonth() + 1}/${now.getDate()} ${now.toLocaleDateString("en-US", { weekday: "short" }).toUpperCase()}`;
+  const activeIndex = hovered ?? (keyNav ? cursor : null);
 
   return (
-    <div id="menu-screen">
-      <video src={src} autoPlay loop muted playsInline />
-      <div className="resume-entry-mask" aria-hidden="true">
-        <video className="resume-entry-video" src={src} autoPlay loop muted playsInline />
-      </div>
-      <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&display=swap');
+    <div id="menu-screen" className="fp-screen">
+      <video className="fp-video" src={BG_VIDEO} autoPlay loop muted playsInline />
+      <div className="fp-tint" aria-hidden="true" />
+      <div className="fp-grain" aria-hidden="true" />
 
-        .resume-entry-mask {
+      <div className="fp-entry-mask" aria-hidden="true">
+        <video className="fp-entry-video" src={BG_VIDEO} autoPlay loop muted playsInline />
+      </div>
+
+      <svg className={`fp-lines${mounted ? " mounted" : ""}`} viewBox={`0 0 ${size.w} ${size.h}`} width={size.w} height={size.h} aria-hidden="true">
+        {LINES.map((l) => {
+          const x1 = (l.x1 / 100) * size.w, y1 = (l.y1 / 100) * size.h;
+          const x2 = (l.x2 / 100) * size.w, y2 = (l.y2 / 100) * size.h;
+          const len = Math.hypot(x2 - x1, y2 - y1);
+          return (
+            <line
+              key={l.id}
+              className={`fp-line fp-line-${l.id}`}
+              x1={x1} y1={y1} x2={x2} y2={y2}
+              stroke={l.stroke}
+              strokeWidth={l.width}
+              style={{ strokeDasharray: len, strokeDashoffset: mounted ? 0 : len, transitionDelay: `${l.delay}s` }}
+            />
+          );
+        })}
+      </svg>
+
+      <header className={`fp-command${mounted ? " mounted" : ""}`}>
+        <button type="button" className="fp-back" onClick={() => navigate("/")} aria-label="Back to main menu">
+          <span aria-hidden="true">‹</span>
+        </button>
+        <div className="fp-command-text">
+          <span className="fp-command-title">FUTURE PERSONA</span>
+          <span className="fp-command-sub">未来のペルソナ / 確認</span>
+        </div>
+      </header>
+
+      <nav className="fp-nodes" aria-label="Future Persona sections">
+        {NODES.map((node, i) => {
+          const isActive = activeIndex === i;
+          const isSelected = selected === i;
+          return (
+            <button
+              key={node.id}
+              type="button"
+              className={`fp-node from-${node.from}${mounted ? " mounted" : ""}${isActive ? " active" : ""}${isSelected ? " selected" : ""}`}
+              style={{ left: `${node.x}vw`, top: `${node.y}vh`, transitionDelay: mounted ? `${0.25 + i * 0.09}s` : "0s" }}
+              onMouseEnter={() => { setHovered(i); setCursor(i); setKeyNav(false); }}
+              onMouseLeave={() => setHovered(null)}
+              onFocus={() => setCursor(i)}
+              onClick={() => setSelected((s) => (s === i ? null : i))}
+              aria-pressed={isSelected}
+            >
+              <span className="fp-node-face">
+                <span className="fp-node-label">{node.label}</span>
+              </span>
+              <span className="fp-node-sub" aria-hidden="true">{node.jp}</span>
+              <span className="fp-node-ping" aria-hidden="true" />
+            </button>
+          );
+        })}
+      </nav>
+
+      <div className={`fp-readout${mounted ? " mounted" : ""}`} aria-hidden="true">
+        <span className="fp-readout-date">{dateLabel}</span>
+        <span className="fp-readout-moon">{moonPhaseLabel(now)}</span>
+      </div>
+
+      <footer className={`fp-hint${mounted ? " mounted" : ""}`}>
+        <span><i className="fp-dot" />BACK</span>
+        <span><i className="fp-dot" />SELECT</span>
+        <span className="fp-hint-keys">◄ ► MOVE · ↵ CONFIRM · ESC MENU</span>
+      </footer>
+
+      <style>{`
+        @import url('https://fonts.googleapis.com/css2?family=Michroma&family=Bebas+Neue&family=Noto+Sans+JP:wght@500;700&display=swap');
+
+        .fp-screen { background: #061a4a; }
+
+        /* ── Background: video with a blue duotone tint + grain, like the reference ── */
+        .fp-video {
+          filter: saturate(0.55) contrast(1.08) brightness(0.95);
+        }
+        .fp-tint {
           position: absolute;
           inset: 0;
-          z-index: 9;
-          overflow: hidden;
-          background: #0047FF;
-          clip-path: circle(0 at 50% 50%);
-          animation: resume-entry-reveal 1.2s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          z-index: 2;
           pointer-events: none;
+          background: linear-gradient(115deg, rgba(24, 70, 190, 0.55) 0%, rgba(90, 150, 255, 0.35) 55%, rgba(200, 225, 255, 0.25) 100%);
+          mix-blend-mode: color;
+        }
+        .fp-grain {
+          position: absolute;
+          inset: 0;
+          z-index: 3;
+          pointer-events: none;
+          opacity: 0.55;
+          background-image:
+            repeating-linear-gradient(180deg, rgba(0,0,0,0) 0 2px, rgba(0,0,0,0.10) 2px 3px),
+            url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' width='180' height='180'><filter id='n'><feTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/><feColorMatrix values='0 0 0 0 1  0 0 0 0 1  0 0 0 0 1  0 0 0 0.35 0'/></filter><rect width='100%' height='100%' filter='url(%23n)'/></svg>");
+          mix-blend-mode: overlay;
+          animation: fp-grain-shift 0.9s steps(3) infinite;
+        }
+        @keyframes fp-grain-shift {
+          0%   { background-position: 0 0, 0 0; }
+          33%  { background-position: 0 0, -40px 20px; }
+          66%  { background-position: 0 0, 30px -35px; }
+          100% { background-position: 0 0, 0 0; }
         }
 
-        .resume-entry-video {
+        /* ── Circle reveal entry ── */
+        .fp-entry-mask {
+          position: absolute;
+          inset: 0;
+          z-index: 4;
+          overflow: hidden;
+          background: #0047ff;
+          clip-path: circle(0 at 50% 50%);
+          animation: fp-entry-reveal 1.1s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+          pointer-events: none;
+        }
+        .fp-entry-video {
           position: absolute;
           inset: 0;
           width: 100%;
           height: 100%;
           object-fit: cover;
+          filter: saturate(0.55) contrast(1.08) brightness(0.95);
+        }
+        @keyframes fp-entry-reveal {
+          from { clip-path: circle(0 at 50% 50%); opacity: 1; }
+          80%  { clip-path: circle(150vmax at 50% 50%); opacity: 1; }
+          to   { clip-path: circle(150vmax at 50% 50%); opacity: 0; }
         }
 
-        @keyframes resume-entry-reveal {
-          from { clip-path: circle(0 at 50% 50%); }
-          to { clip-path: circle(150vmax at 50% 50%); }
-        }
-
-        .resume-overlay {
+        /* ── Guide lines ── */
+        .fp-lines {
           position: absolute;
           inset: 0;
-          z-index: 10;
+          width: 100%;
+          height: 100%;
+          z-index: 5;
           pointer-events: none;
         }
+        .fp-line {
+          stroke-linecap: square;
+          transition: stroke-dashoffset 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+        }
+        .fp-line-white { filter: drop-shadow(0 0 4px rgba(255,255,255,0.55)); }
 
-        .resume-stack {
+        /* ── Command header (top-left) ── */
+        .fp-command {
           position: absolute;
-          top: 9vh;
-          left: 2.8vw;
-          width: min(47vw, 720px);
+          top: 4vh;
+          left: 3vw;
+          z-index: 8;
           display: flex;
-          flex-direction: column;
-          gap: 10px;
-          pointer-events: none;
-          transform: scale(0.9);
-          transform-origin: top left;
-        }
-
-        .resume-list-tag {
-          font-family: 'Anton', sans-serif;
-          font-size: 92px;
-          line-height: 0.9;
-          color: #f6fbff;
-          letter-spacing: 2px;
-          margin: 0 0 6px 12px;
-          text-shadow: 0 2px 0 rgba(0,0,0,0.18);
+          align-items: center;
+          gap: 14px;
           opacity: 0;
           transform: translateX(-24px);
-          transition: opacity 0.35s ease, transform 0.35s ease;
+          transition: opacity 0.4s ease 0.1s, transform 0.4s cubic-bezier(0.22,1,0.36,1) 0.1s;
         }
-        .resume-list-tag.mounted {
-          opacity: 1;
-          transform: translateX(0);
-        }
-
-        .resume-card-wrap {
-          position: relative;
-          opacity: 0;
-          transform: translateX(-48px);
-          transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
-          pointer-events: all;
+        .fp-command.mounted { opacity: 1; transform: translateX(0); }
+        .fp-back {
+          width: 52px;
+          height: 52px;
+          border: 0;
+          background: rgba(5, 7, 12, 0.85);
+          color: #fff;
+          font: 44px/1 'Michroma', sans-serif;
           cursor: pointer;
+          display: grid;
+          place-items: center;
+          padding-bottom: 6px;
+          transition: background 0.2s ease, color 0.2s ease;
         }
-        .resume-card-wrap.mounted {
-          opacity: 1;
-          transform: translateX(0);
-        }
-
-        .resume-card {
-          position: relative;
-          height: 112px;
-          background: #10185f;
-          clip-path: polygon(0 0, 97% 0, 100% 100%, 3% 100%);
-          box-shadow: 0 8px 0 rgba(5, 13, 59, 0.85);
-          transition: height 0.4s cubic-bezier(0.22, 1, 0.36, 1), transform 0.3s cubic-bezier(0.22, 1, 0.36, 1), background 0.3s ease, box-shadow 0.3s ease;
-          overflow: visible;
-        }
-        .resume-card-wrap.active .resume-card {
-          background: var(--p3-blue-light);
-          box-shadow: 10px 8px 0 var(--p3-red-accent);
-          height: 136px;
-          transform: translateX(6px) scale(1.02);
-        }
-
-        .resume-card-inner {
-          position: absolute;
-          inset: 0;
-          padding: 14px 22px 14px 62px;
-          display: flex;
-          align-items: flex-start;
-          justify-content: space-between;
-        }
-
-        .resume-badge {
-          position: absolute;
-          top: 10px;
-          left: -10px;
-          width: 56px;
-          height: 70px;
-          background: #0b113d;
-          border: 3px solid #9cf7ff;
-          clip-path: polygon(14% 0, 100% 0, 84% 100%, 0 100%);
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          transform: rotate(-8deg);
-          box-shadow: 0 4px 0 rgba(0,0,0,0.28);
-          transition: background 0.22s ease, border-color 0.22s ease;
-        }
-        .resume-badge-text {
-          font-family: 'Bebas Neue', sans-serif;
-          font-size: 36px;
-          color: #d2fdff;
-          letter-spacing: 1px;
-          transform: rotate(8deg);
-        }
-        .resume-card-wrap.active .resume-badge {
-          background: #000;
-          border-color: #000;
-        }
-        .resume-card-wrap.active .resume-badge-text {
-          color: #fff;
-        }
-
-        .resume-title {
-          font-family: 'Anton', sans-serif;
-          font-size: 56px;
-          line-height: 0.9;
-          letter-spacing: 1px;
-          color: #a5f6ff;
-          transition: color 0.22s ease;
-        }
-        .resume-card-wrap.active .resume-title {
-          color: var(--p3-text-on-light);
-        }
-
-        .resume-rank {
-          display: flex;
-          align-items: center;
-          gap: 10px;
-          margin-top: 2px;
-          flex-shrink: 0;
-        }
-        .resume-rank-label {
-          font-family: 'Bebas Neue', sans-serif;
-          font-size: 28px;
-          letter-spacing: 2px;
-          color: #9ffbff;
-          transition: color 0.22s ease;
-        }
-        .resume-rank-number {
-          font-family: 'Anton', sans-serif;
-          font-size: 70px;
-          line-height: 0.82;
-          color: #9ffbff;
-          transition: color 0.22s ease;
-        }
-        .resume-card-wrap.active .resume-rank-label,
-        .resume-card-wrap.active .resume-rank-number {
-          color: var(--p3-text-on-light);
-        }
-
-        .resume-subtitle-bar {
-          position: absolute;
-          left: 64px;
-          right: 14px;
-          bottom: 12px;
-          height: 34px;
-          background: #85f4ff;
+        .fp-back:hover { background: #fff; color: #05070c; }
+        .fp-command-text { display: flex; flex-direction: column; gap: 4px; }
+        .fp-command-title {
+          font-family: 'Michroma', sans-serif;
+          font-size: clamp(16px, 1.6vw, 24px);
+          letter-spacing: 3px;
+          color: #05070c;
+          background: rgba(255, 255, 255, 0.92);
+          padding: 8px 18px 6px 14px;
           clip-path: polygon(0 0, 100% 0, calc(100% - 10px) 100%, 0 100%);
-          display: flex;
-          align-items: center;
-          padding: 0 18px;
-          transition: background 0.22s ease;
         }
-        .resume-card-wrap.active .resume-subtitle-bar {
-          background: #000;
-        }
-
-        .resume-subtitle {
-          font-family: 'Bebas Neue', sans-serif;
-          font-size: 28px;
-          line-height: 1;
-          letter-spacing: 1px;
-          color: #041238;
-          transition: color 0.22s ease;
-        }
-        .resume-card-wrap.active .resume-subtitle {
+        .fp-command-sub {
+          font-family: 'Noto Sans JP', sans-serif;
+          font-weight: 500;
+          font-size: 13px;
+          letter-spacing: 2px;
           color: #fff;
+          background: rgba(5, 7, 12, 0.85);
+          padding: 3px 12px;
+          width: fit-content;
         }
 
-        .resume-detail-panel {
-          position: absolute;
-          top: 9.5vh;
-          right: 4.5vw;
-          width: min(39vw, 620px);
-          min-height: 74vh;
-          z-index: 12;
-          padding: 22px 24px 24px 24px;
-          background: linear-gradient(180deg, rgba(15, 28, 105, 0.96) 0%, rgba(8, 16, 68, 0.97) 100%);
-          clip-path: polygon(0 0, 100% 0, calc(100% - 18px) 100%, 0 100%);
-          box-shadow:
-            inset 0 0 0 1px rgba(133, 244, 255, 0.16),
-            var(--p3-panel-shadow);
-          overflow: hidden;
-        }
-        .resume-detail-panel::before {
-          content: "";
+        /* ── The five squares ── */
+        .fp-nodes {
           position: absolute;
           inset: 0;
-          background:
-            linear-gradient(135deg, rgba(133, 244, 255, 0.08) 0 15%, transparent 15% 100%),
-            linear-gradient(180deg, rgba(255,255,255,0.05), transparent 24%);
+          z-index: 7;
+        }
+        .fp-node {
+          position: absolute;
+          border: 0;
+          padding: 0;
+          background: none;
+          cursor: pointer;
+          opacity: 0;
+          transition: opacity 0.4s ease, transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+          transform-origin: center;
+        }
+        .fp-node.from-left   { transform: translateX(-70px) skewX(-6deg); }
+        .fp-node.from-right  { transform: translateX(70px) skewX(-6deg); }
+        .fp-node.from-top    { transform: translateY(-50px) skewX(-6deg); }
+        .fp-node.from-bottom { transform: translateY(50px) skewX(-6deg); }
+        .fp-node.mounted { opacity: 1; transform: translate(0, 0) skewX(-6deg); }
+
+        .fp-node-face {
+          display: block;
+          position: relative;
+          padding: 12px 34px 10px 30px;
+          background: #05070c;
+          color: #fff;
+          box-shadow: 0 0 0 1px rgba(255,255,255,0.08), 6px 6px 0 rgba(0, 0, 0, 0.35);
+          transition: background 0.18s ease, color 0.18s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1), box-shadow 0.25s ease;
+        }
+        .fp-node-label {
+          display: block;
+          font-family: 'Michroma', sans-serif;
+          font-size: clamp(13px, 1.35vw, 21px);
+          letter-spacing: 2px;
+          line-height: 1;
+          white-space: nowrap;
+          transform: skewX(6deg);
+        }
+        /* subtitle bar that pops out under the box on hover / focus */
+        .fp-node-sub {
+          position: absolute;
+          right: -10px;
+          top: calc(100% + 4px);
+          font-family: 'Noto Sans JP', sans-serif;
+          font-weight: 700;
+          font-size: 13px;
+          letter-spacing: 3px;
+          color: #fff;
+          background: #05070c;
+          padding: 3px 14px 2px;
+          white-space: nowrap;
+          opacity: 0;
+          transform: translateY(-8px) scaleX(0.6);
+          transform-origin: left center;
+          transition: opacity 0.2s ease, transform 0.28s cubic-bezier(0.22, 1, 0.36, 1);
           pointer-events: none;
         }
-        .resume-detail-top {
-          position: relative;
-          display: grid;
-          grid-template-columns: 70px 1fr auto;
-          align-items: center;
-          gap: 14px;
-          min-height: 92px;
-          padding: 0 18px;
-          background: linear-gradient(90deg, #8ef5ff 0%, #d3fdff 100%);
-          clip-path: polygon(0 0, 100% 0, calc(100% - 16px) 100%, 0 100%);
-          color: #08153f;
-          box-shadow: 10px 0 0 var(--p3-red-accent);
-        }
-        .resume-detail-top-index {
-          font-family: 'Anton', sans-serif;
-          font-size: 46px;
-          line-height: 1;
-        }
-        .resume-detail-top-title {
-          font-family: 'Anton', sans-serif;
-          font-size: 42px;
-          line-height: 0.92;
-          letter-spacing: 1px;
-        }
-        .resume-detail-top-progress {
-          font-family: 'Bebas Neue', sans-serif;
-          font-size: 42px;
-          letter-spacing: 2px;
-          line-height: 1;
-        }
-        .resume-detail-list {
-          position: relative;
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
-          margin-top: 18px;
-        }
-        .resume-detail-row {
-          display: grid;
-          grid-template-columns: 50px 1fr auto;
-          align-items: center;
-          gap: 14px;
-          min-height: 56px;
-          padding: 0 14px;
-          background: rgba(8, 18, 72, 0.96);
-          clip-path: polygon(0 0, 100% 0, calc(100% - 14px) 100%, 0 100%);
-          box-shadow: inset 0 0 0 1px rgba(140, 239, 255, 0.12);
-          transition: transform 0.16s ease, background 0.16s ease;
-        }
-        .resume-detail-row:hover {
-          transform: translateX(4px);
-          background: rgba(12, 26, 94, 1);
-        }
-        .resume-detail-row-index {
-          font-family: 'Bebas Neue', sans-serif;
-          font-size: 26px;
-          letter-spacing: 1px;
-          color: #94f4ff;
-        }
-        .resume-detail-row-title {
-          font-family: 'Anton', sans-serif;
-          font-size: 28px;
-          line-height: 1;
-          color: #f2fcff;
-        }
-        .resume-detail-status {
-          font-family: 'Bebas Neue', sans-serif;
-          font-size: 22px;
-          line-height: 1;
-          letter-spacing: 1.1px;
-          color: #06133b;
-          background: #8df6ff;
-          padding: 7px 12px;
-          clip-path: polygon(0 0, 100% 0, calc(100% - 8px) 100%, 0 100%);
-        }
-        .resume-detail-bottom {
-          position: relative;
-          margin-top: 22px;
-          padding: 18px;
-          background: rgba(5, 13, 57, 0.97);
-          clip-path: polygon(0 0, 100% 0, calc(100% - 16px) 100%, 0 100%);
-          box-shadow: inset 0 0 0 1px rgba(145, 239, 255, 0.12);
-        }
-        .resume-detail-bottom-title {
-          font-family: 'Bebas Neue', sans-serif;
-          font-size: 30px;
-          letter-spacing: 2px;
-          color: #91f5ff;
-          margin-bottom: 14px;
-        }
-        .resume-detail-bullets {
-          display: flex;
-          flex-direction: column;
-          gap: 10px;
-        }
-        .resume-detail-bullet {
-          font-family: 'Anton', sans-serif;
-          font-size: 21px;
-          line-height: 1.15;
-          color: #edfaff;
+        .fp-node-ping {
+          position: absolute;
+          inset: -6px;
+          border: 2px solid #fff;
+          opacity: 0;
+          pointer-events: none;
         }
 
+        @keyframes fp-pop {
+          0%   { transform: scale(0.94); }
+          55%  { transform: scale(1.12); }
+          100% { transform: scale(1.06); }
+        }
+        @keyframes fp-ping {
+          0%   { opacity: 0.9; transform: scale(1); }
+          100% { opacity: 0; transform: scale(1.35); }
+        }
+        .fp-node.active { z-index: 2; }
+        .fp-node.active .fp-node-face {
+          background: #fff;
+          color: #05070c;
+          box-shadow: 0 0 0 2px #05070c, 8px 8px 0 rgba(0, 0, 0, 0.55), 0 0 28px rgba(255,255,255,0.45);
+          animation: fp-pop 0.32s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
+        }
+        .fp-node.active .fp-node-sub { opacity: 1; transform: translateY(0) scaleX(1); }
+        .fp-node.active .fp-node-ping { animation: fp-ping 0.6s ease-out forwards; }
+        .fp-node.selected .fp-node-face {
+          background: #fff;
+          color: #05070c;
+          box-shadow: 0 0 0 2px #05070c, 8px 8px 0 #c4001a;
+        }
+        .fp-node.selected .fp-node-sub { opacity: 1; transform: translateY(0) scaleX(1); }
+        .fp-node:focus-visible { outline: 0; }
+        .fp-node:focus-visible .fp-node-face { box-shadow: 0 0 0 3px #fff, 0 0 0 5px #05070c; }
+
+        /* ── Date + moon readout (bottom-right) ── */
+        .fp-readout {
+          position: absolute;
+          right: 3vw;
+          bottom: 5vh;
+          z-index: 8;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-end;
+          gap: 2px;
+          opacity: 0;
+          transition: opacity 0.5s ease 0.6s;
+        }
+        .fp-readout.mounted { opacity: 1; }
+        .fp-readout-date {
+          font-family: 'Michroma', sans-serif;
+          font-size: clamp(18px, 2vw, 30px);
+          letter-spacing: 2px;
+          color: #fff;
+          text-shadow: 2px 2px 0 #05070c, 0 0 14px rgba(0,0,0,0.5);
+        }
+        .fp-readout-moon {
+          font-family: 'Bebas Neue', sans-serif;
+          font-size: 16px;
+          letter-spacing: 4px;
+          color: #05070c;
+          background: rgba(255,255,255,0.9);
+          padding: 2px 10px;
+        }
+
+        /* ── Bottom-left hint ── */
+        .fp-hint {
+          position: absolute;
+          left: 3vw;
+          bottom: 4vh;
+          z-index: 8;
+          display: flex;
+          align-items: center;
+          gap: 18px;
+          font-family: 'Bebas Neue', sans-serif;
+          font-size: 18px;
+          letter-spacing: 3px;
+          color: #fff;
+          background: rgba(5, 7, 12, 0.7);
+          padding: 6px 16px 5px;
+          border-left: 4px solid #fff;
+          opacity: 0;
+          transition: opacity 0.5s ease 0.7s;
+        }
+        .fp-hint.mounted { opacity: 1; }
+        .fp-hint span { display: inline-flex; align-items: center; gap: 6px; }
+        .fp-dot { width: 10px; height: 10px; border-radius: 50%; background: #fff; display: inline-block; }
+        .fp-hint-keys { font-size: 13px; letter-spacing: 2px; opacity: 0.55; }
+
+        @media (max-width: 720px) {
+          .fp-node-face { padding: 10px 18px 8px 16px; }
+          .fp-node-label { font-size: 12px; letter-spacing: 1px; }
+          .fp-command-title { font-size: 14px; letter-spacing: 2px; }
+          .fp-hint-keys { display: none; }
+          .fp-readout-date { font-size: 18px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .fp-grain, .fp-entry-mask, .fp-node.active .fp-node-face, .fp-node.active .fp-node-ping { animation: none !important; }
+          .fp-entry-mask { display: none; }
+          .fp-node, .fp-line, .fp-command, .fp-hint, .fp-readout { transition: none; }
+        }
       `}</style>
-
-      <div className="resume-overlay">
-        <div className="resume-stack">
-          <div className={`resume-list-tag${mounted ? " mounted" : ""}`}>LIST</div>
-          {ITEMS.map((item, index) => (
-            <div
-              key={item.id}
-              className={`resume-card-wrap${active === index ? " active" : ""}${mounted ? " mounted" : ""}`}
-              style={{ transitionDelay: `${index * 55}ms` }}
-              onMouseEnter={() => {
-                setActive(index);
-              }}
-              onClick={() => {
-                setActive(index);
-              }}
-            >
-              <div className="resume-card">
-                <div className="resume-badge">
-                  <div className="resume-badge-text">{item.badge}</div>
-                </div>
-                <div className="resume-card-inner">
-                  <div className="resume-title">{item.title}</div>
-                  <div className="resume-rank">
-                    <div className="resume-rank-label">RANK</div>
-                    <div className="resume-rank-number">{item.rank}</div>
-                  </div>
-                </div>
-                <div className="resume-subtitle-bar">
-                  <div className="resume-subtitle">{item.subtitle}</div>
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
-
-        {active === 0 && (
-          <div className="resume-detail-panel">
-            <div className="resume-detail-top">
-              <div className="resume-detail-top-index">01</div>
-              <div className="resume-detail-top-title">GITHUB REPOS</div>
-              <div className="resume-detail-top-progress">{repos.length}/∞</div>
-            </div>
-
-            <div className="resume-detail-list">
-              {repos.map((row) => (
-                <div className="resume-detail-row" key={row.index}>
-                  <div className="resume-detail-row-index">{row.index}</div>
-                  <div className="resume-detail-row-title">{row.title}</div>
-                  <div className="resume-detail-status">{row.status}</div>
-                </div>
-              ))}
-            </div>
-
-            <div className="resume-detail-bottom">
-              <div className="resume-detail-bottom-title">DETAILS</div>
-              <div className="resume-detail-bullets">
-                <div className="resume-detail-bullet">- Showcase active projects and contributions across multiple<br />&nbsp;&nbsp;technologies.</div>
-                <div className="resume-detail-bullet">- Track repository statistics, languages, and engagement<br />&nbsp;&nbsp;metrics.</div>
-                <div className="resume-detail-bullet">- Highlight work ready for review and collaboration.</div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {active === 1 && (
-          <div className="resume-detail-panel">
-            <div className="resume-detail-top">
-              <div className="resume-detail-top-index">02</div>
-              <div className="resume-detail-top-title">TECH ARSENAL</div>
-              <div className="resume-detail-top-progress">12/∞</div>
-            </div>
-
-            <div className="resume-detail-list">
-              <div className="resume-detail-row">
-                <div className="resume-detail-row-index">01</div>
-                <div className="resume-detail-row-title">Python</div>
-                <div className="resume-detail-status">Advanced</div>
-              </div>
-              <div className="resume-detail-row">
-                <div className="resume-detail-row-index">02</div>
-                <div className="resume-detail-row-title">C++</div>
-                <div className="resume-detail-status">Proficient</div>
-              </div>
-              <div className="resume-detail-row">
-                <div className="resume-detail-row-index">03</div>
-                <div className="resume-detail-row-title">AI/ML Libraries</div>
-                <div className="resume-detail-status">Proficient</div>
-              </div>
-              <div className="resume-detail-row">
-                <div className="resume-detail-row-index">04</div>
-                <div className="resume-detail-row-title">Numpy/Pandas</div>
-                <div className="resume-detail-status">Advanced</div>
-              </div>
-            </div>
-
-            <div className="resume-detail-bottom">
-              <div className="resume-detail-bottom-title">SPECIALIZATION</div>
-              <div className="resume-detail-bullets">
-                <div className="resume-detail-bullet">- Implementing high-performance AI algorithms using C++ and<br />&nbsp;&nbsp;Python for academic projects.</div>
-                <div className="resume-detail-bullet">- Utilizing NumPy and pandas to build and analyze scalable data<br />&nbsp;&nbsp;processing pipelines.</div>
-                <div className="resume-detail-bullet">- Exploring low-level hardware optimization to improve the<br />&nbsp;&nbsp;efficiency of ML architectures.</div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {active === 2 && (
-          <div className="resume-detail-panel">
-            <div className="resume-detail-top">
-              <div className="resume-detail-top-index">03</div>
-              <div className="resume-detail-top-title">FEATURED WORK</div>
-              <div className="resume-detail-top-progress">5/∞</div>
-            </div>
-
-            <div className="resume-detail-list">
-              <div className="resume-detail-row">
-                <div className="resume-detail-row-index">01</div>
-                <div className="resume-detail-row-title">Computer Vision (Hand Tracker)</div>
-                <div className="resume-detail-status">Python</div>
-              </div>
-              <div className="resume-detail-row">
-                <div className="resume-detail-row-index">02</div>
-                <div className="resume-detail-row-title">Image Classification AI</div>
-                <div className="resume-detail-status">Python</div>
-              </div>
-              <div className="resume-detail-row">
-                <div className="resume-detail-row-index">03</div>
-                <div className="resume-detail-row-title">Portfolio Website</div>
-                <div className="resume-detail-status">React</div>
-              </div>
-              <div className="resume-detail-row">
-                <div className="resume-detail-row-index">04</div>
-                <div className="resume-detail-row-title">ML Model Suite</div>
-                <div className="resume-detail-status">Python</div>
-              </div>
-            </div>
-
-            <div className="resume-detail-bottom">
-              <div className="resume-detail-bottom-title">APPROACH</div>
-              <div className="resume-detail-bullets">
-                <div className="resume-detail-bullet">- Clean, scalable architecture with performance optimization.</div>
-                <div className="resume-detail-bullet">- User-centered design with accessibility in mind.</div>
-                <div className="resume-detail-bullet">- Rigorous testing and documentation practices.</div>
-              </div>
-            </div>
-          </div>
-        )}
-
-        {active === 3 && (
-          <div className="resume-detail-panel">
-            <div className="resume-detail-top">
-              <div className="resume-detail-top-index">04</div>
-              <div className="resume-detail-top-title">CONTRIBUTIONS</div>
-              <div className="resume-detail-top-progress">8/∞</div>
-            </div>
-
-            <div className="resume-detail-list">
-              <div className="resume-detail-row">
-                <div className="resume-detail-row-index">01</div>
-                <div className="resume-detail-row-title">Open Source Projects</div>
-                <div className="resume-detail-status">Active</div>
-              </div>
-              <div className="resume-detail-row">
-                <div className="resume-detail-row-index">02</div>
-                <div className="resume-detail-row-title">Code Reviews</div>
-                <div className="resume-detail-status">Regular</div>
-              </div>
-              <div className="resume-detail-row">
-                <div className="resume-detail-row-index">03</div>
-                <div className="resume-detail-row-title">Technical Writing</div>
-                <div className="resume-detail-status">Ongoing</div>
-              </div>
-              <div className="resume-detail-row">
-                <div className="resume-detail-row-index">04</div>
-                <div className="resume-detail-row-title">Community Events</div>
-                <div className="resume-detail-status">Speaker</div>
-              </div>
-            </div>
-
-            <div className="resume-detail-bottom">
-              <div className="resume-detail-bottom-title">IMPACT</div>
-              <div className="resume-detail-bullets">
-                <div className="resume-detail-bullet">- Contributing to meaningful projects that improve developer<br />&nbsp;&nbsp;experience.</div>
-                <div className="resume-detail-bullet">- Sharing knowledge through documentation and community<br />&nbsp;&nbsp;engagement.</div>
-                <div className="resume-detail-bullet">- Mentoring junior developers and fostering collaborative<br />&nbsp;&nbsp;growth.</div>
-              </div>
-            </div>
-          </div>
-        )}
-
-      </div>
-    </div >
+    </div>
   );
 }

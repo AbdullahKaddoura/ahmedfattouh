@@ -1,14 +1,10 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { profile } from "./portfolioData";
+import { FaDiscord, FaInstagram, FaTiktok } from "react-icons/fa6";
 import char1 from "./assets/char1.png";
 import char2 from "./assets/char2.png";
 import char3 from "./assets/char3.png";
 import bgVideo from "./assets/main3.mp4";
-import newsign from "./assets/newsign.png";
-import icon1 from "./assets/icon1.png";
-import icon2 from "./assets/icon2.png";
-import icon3 from "./assets/icon3.png";
 
 const CHARS = [char1, char2, char3];
 
@@ -20,29 +16,26 @@ const ROLES = [
 
 const ITEMS = [
   {
-    id: "github", label: "GITHUB", handle: "@MdHu55a1n", href: "https://github.com/MdHu55a1n", icon: "🐙", barIcon: icon1,
+    id: "instagram", label: "INSTAGRAM", handle: "@ahmd.ftt", href: "https://www.instagram.com/ahmd.ftt?stkn=NnUxZGhrdWl2MmJ2", icon: FaInstagram,
     details: [
-      { label: "USER", value: "MdHu55a1n", icon: "👤" },
-      { label: "ROLE", value: "AI Engineer", icon: "🤖" },
-      { label: "LOC", value: "Indore, India", icon: "📍" }
+      { label: "USER", value: "@ahmd.ftt", icon: "" },
+      { label: "STATUS", value: "Active", icon: "" }
     ],
     stats: [],
   },
   {
-    id: "linkedin", label: "LINKEDIN", handle: "Mohammad Hussain", href: "https://www.linkedin.com/in/mohammad-hussain-546315402/", icon: "💼", barIcon: icon2,
+    id: "tiktok", label: "TIKTOK", handle: "@d4n0b", href: "https://www.tiktok.com/@d4n0b?_r=1&_t=ZS-99hROEMBQn6", icon: FaTiktok,
     details: [
-      { label: "USER", value: "Mohammad Hussain", icon: "👤" },
-      { label: "ROLE", value: "AI Engineer", icon: "🤖" },
-      { label: "STAT", value: "Active", icon: "✨" }
+      { label: "USER", value: "@d4n0b", icon: "" },
+      { label: "STATUS", value: "Active", icon: "" }
     ],
     stats: [],
   },
   {
-    id: "instagram", label: "INSTAGRAM", handle: "mohammadhussain9805", href: "https://www.instagram.com/mohammadhussain9805/", icon: "📷", barIcon: icon3,
+    id: "discord", label: "DISCORD", handle: "718015166717100073", href: "https://discord.com/users/718015166717100073", icon: FaDiscord,
     details: [
-      { label: "USER", value: "mohammadhussain9805", icon: "👤" },
-      { label: "TYPE", value: "Personal", icon: "🎨" },
-      { label: "STAT", value: "Active", icon: "🔥" }
+      { label: "USER", value: "@d1n0B", icon: "" },
+      { label: "STATUS", value: "Active", icon: "" }
     ],
     stats: [],
   },
@@ -104,15 +97,15 @@ export default function Socials() {
           flex-direction: column;
           align-items: flex-start;
           justify-content: center;
-          gap: 6px;
+          gap: 14px;
           padding-left: 0;
         }
 
         /* ── Each bar ── */
         .sc-bar {
           position: relative;
-          width: 45vw;
-          height: 64px;
+          width: min(62vw, 900px);
+          height: 82px;
           transition: height 0.3s cubic-bezier(0.22,1,0.36,1), transform 0.22s ease, box-shadow 0.22s ease, background 0.22s ease;
           background: #111;
           cursor: pointer;
@@ -134,8 +127,8 @@ export default function Socials() {
           transform: translateX(-48px);
           transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
         }
-        .sc-bar-outer.active .sc-bar     { height: 90px; }
-        .sc-bar-outer.active .sc-bar-red { height: 90px; }
+        .sc-bar-outer.active .sc-bar     { height: 116px; }
+        .sc-bar-outer.active .sc-bar-red { height: 116px; }
         .sc-bar-outer.mounted { opacity: 1; transform: translateX(0); }
         .sc-bar-outer:nth-child(1) { transition-delay: 0ms; }
         .sc-bar-outer:nth-child(2) { transition-delay: 80ms; }
@@ -145,8 +138,8 @@ export default function Socials() {
         .sc-bar-red {
           position: absolute;
           top: 0; left: 0;
-          width: 45vw;
-          height: 64px;
+          width: min(62vw, 900px);
+          height: 82px;
           background: #c4001a;
           clip-path: polygon(50% 0, 100% 0, 100% 100%, calc(50% - 10px) 100%);
           transform: translateY(-7px);
@@ -213,7 +206,7 @@ export default function Socials() {
           align-items: center;
           flex-shrink: 0;
           font-family: 'Anton', sans-serif;
-          font-size: 50px;
+          font-size: clamp(2.2rem, 4.4vw, 4.5rem);
           letter-spacing: -2px;
           color: #ffffff;
           transform: rotate(-30deg);
@@ -239,8 +232,8 @@ export default function Socials() {
 
         .sc-icon {
           font-family: 'Bebas Neue', sans-serif;
-          font-size: 22px;
-          width: 32px;
+          font-size: clamp(1.4rem, 2.2vw, 2.25rem);
+          width: 42px;
           text-align: center;
           flex-shrink: 0;
           color: rgba(255,255,255,0.15);
@@ -251,7 +244,7 @@ export default function Socials() {
 
         .sc-label {
           font-family: 'Bebas Neue', sans-serif;
-          font-size: 32px;
+          font-size: clamp(2rem, 3.2vw, 3.1rem);
           letter-spacing: 6px;
           line-height: 1;
           color: rgba(255,255,255,0.85);
@@ -297,7 +290,7 @@ export default function Socials() {
           left: 110px;
           height: 100%;
           width: auto;
-          max-width: 160px;
+          max-width: 190px;
           object-fit: cover;
           object-position: top;
           pointer-events: none;
@@ -364,8 +357,8 @@ export default function Socials() {
           position: fixed;
           right: 0;
           left: 55%;
-          height: 60px;
-          background: transparent;
+          height: 72px;
+          background: rgba(17,17,17,0.94);
           pointer-events: all;
           cursor: pointer;
           z-index: 50;
@@ -381,7 +374,7 @@ export default function Socials() {
           position: relative;
           width: 100%;
           height: 100%;
-          background: transparent;
+          background: rgba(17,17,17,0.94);
           display: flex;
           align-items: center;
           overflow: hidden;
@@ -410,9 +403,10 @@ export default function Socials() {
         .sc-info-bar-text {
           flex: 1;
           font-family: 'Bebas Neue', sans-serif;
-          font-size: 32px;
+          font-size: clamp(1.4rem, 2.2vw, 2.2rem);
           letter-spacing: 2px;
-          color: #8df6ff;
+          color: #ffffff;
+          font-weight: 700;
           padding: 0 14px;
           user-select: none;
           transition: color 0.15s ease;
@@ -421,23 +415,11 @@ export default function Socials() {
           color: #000;
         }
 
-
-        .sc-info-bar-icon {
-          height: 55%;
-          width: auto;
-          flex-shrink: 0;
-          margin-left: 14px;
-          object-fit: contain;
-          pointer-events: none;
-          user-select: none;
-        }
-
         .sc-info-bar-count {
           font-family: 'Bebas Neue', sans-serif;
           font-size: 34px;
           letter-spacing: 1px;
-          color: #8df6ff;
-          margin-right: 40px;
+          color: #ffffff;
           flex-shrink: 0;
           user-select: none;
           white-space: nowrap;
@@ -469,6 +451,66 @@ export default function Socials() {
           border-radius: 3px;
           padding: 1px 6px; font-size: 11px;
         }
+
+        .sc-back-button {
+          position: fixed;
+          bottom: 26px;
+          left: 28px;
+          z-index: 50;
+          pointer-events: all;
+          border: 1px solid rgba(141,246,255,0.5);
+          background: rgba(17,17,17,0.9);
+          color: #8df6ff;
+          padding: 10px 18px;
+          font-family: 'Bebas Neue', sans-serif;
+          font-size: 20px;
+          letter-spacing: 2px;
+          cursor: pointer;
+          clip-path: polygon(0 0, calc(100% - 10px) 0, 100% 100%, 10px 100%);
+          opacity: 0;
+          transform: translateX(-24px);
+          transition: opacity 0.4s ease 0.35s, transform 0.4s ease 0.35s, background 0.2s ease, color 0.2s ease;
+        }
+        .sc-back-button.mounted {
+          opacity: 1;
+          transform: translateX(0);
+        }
+        .sc-back-button:hover,
+        .sc-back-button:focus-visible {
+          background: #8df6ff;
+          color: #111;
+          outline: none;
+        }
+
+        @media (max-width: 720px) {
+          .sc-root { gap: 10px; }
+          .sc-bar,
+          .sc-bar-red {
+            width: 86vw;
+            height: 70px;
+          }
+          .sc-bar-outer.active .sc-bar,
+          .sc-bar-outer.active .sc-bar-red { height: 96px; }
+          .sc-role { font-size: clamp(1.7rem, 8vw, 3rem); }
+          .sc-label {
+            font-size: clamp(1.65rem, 7vw, 2.5rem);
+            letter-spacing: 3px;
+          }
+          .sc-main-top { padding-right: 24px !important; }
+          .sc-char {
+            left: 78px;
+            max-width: 115px;
+          }
+          .sc-info-bar-wrap {
+            left: 34%;
+            height: 58px;
+          }
+          .sc-info-bar-text { font-size: 1.1rem; }
+          .sc-info-bar-count {
+            font-size: 1.35rem;
+            margin-right: 12px;
+          }
+        }
       `}</style>
 
       <div className="sc-root" role="navigation">
@@ -491,7 +533,7 @@ export default function Socials() {
                 <div className="sc-role">{ROLES[i].text}</div>
                 <div className="sc-main">
                   <div className="sc-main-top" style={{ paddingRight: '120px' }}>
-                    <div className="sc-icon">{item.icon}</div>
+                    <div className="sc-icon" aria-hidden="true"><item.icon /></div>
                     <div className="sc-label">{item.label}</div>
                   </div>
                 </div>
@@ -515,7 +557,7 @@ export default function Socials() {
         <div
           className={`sc-info-bar-wrap${activeInfoBar === i ? " selected" : ""}`}
           key={`bar-${active}-${i}`}
-          style={{ top: `${155 + i * 68}px`, animationDelay: `${i * 50}ms` }}
+          style={{ top: `${155 + i * 82}px`, animationDelay: `${i * 50}ms` }}
           onClick={() => setActiveInfoBar(i)}
           onMouseEnter={() => setActiveInfoBar(i)}
         >
@@ -533,6 +575,15 @@ export default function Socials() {
           </div>
         </div>
       ))}
+
+      <button
+        type="button"
+        className={`sc-back-button${mounted ? " mounted" : ""}`}
+        onClick={() => navigate('/')}
+        aria-label="Back to main menu"
+      >
+        ← BACK TO MENU
+      </button>
 
       <div className={`sc-footer${mounted ? " mounted" : ""}`}>
         <div className="sc-footer-row"><span className="sc-footer-key">↑↓</span><span>SELECT</span></div>

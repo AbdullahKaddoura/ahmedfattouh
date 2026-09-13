@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react'
 import menuVideo from './assets/Mainn.mp4'
 import menuLoopVideo from './assets/Mainn_1.mp4'
 import main1 from './assets/main1.mp4'
-import main2 from './assets/main2.mp4'
 import main3 from './assets/main3.mp4'
 import P3Menu from './P3Menu'
 import VideoPage from './VideoPage'
@@ -12,6 +11,7 @@ import ResumePage from './ResumePage'
 import PageTransition from './PageTransition'
 import Socials from './Socials'
 import AboutMe from './AboutMe'
+import MusicPage from './MusicPage'
 import './App.css'
 
 function BackgroundVideo({ intro, loop, ...props }) {
@@ -64,11 +64,7 @@ function MenuScreen() {
     <div id="menu-screen">
       <BackgroundVideo intro={menuVideo} loop={menuLoopVideo} />
       <P3Menu onNavigate={(page) => {
-        if (page === 'github') {
-          window.open('https://github.com/MdHu55a1n', '_blank', 'noopener,noreferrer')
-        } else {
-          navigate(`/${page}`)
-        }
+        navigate(`/${page}`)
       }} />
     </div>
   )
@@ -526,13 +522,16 @@ function AnimatedRoutes() {
           <PageTransition variant="about"><AboutMe /></PageTransition>
         } />
         <Route path="/resume" element={
-          <PageTransition><ResumePage src={main2} /></PageTransition>
+          <PageTransition><ResumePage /></PageTransition>
         } />
         <Route path="/socials" element={
           <PageTransition variant="socials"><Socials /></PageTransition>
         } />
         <Route path="/sideproj" element={
           <PageTransition><SideProjectsPage /></PageTransition>
+        } />
+        <Route path="/music" element={
+          <PageTransition><MusicPage /></PageTransition>
         } />
       </Routes>
     </AnimatePresence>
