@@ -15,7 +15,7 @@ import { useContent } from "./useContent.js";
     values           — { key: value } current values
     onSave(values)   — async; return { ok, error }
 */
-export default function EditModal({ open, onClose, title, subtitle, view, fields, values, onSave }) {
+export default function EditModal({ open, onClose, title, subtitle, view, fields, values, onSave, custom, wide }) {
   const { unlocked, unlock, source } = useContent();
   const [mode, setMode] = useState("view"); // view | password | edit
   const [pin, setPin] = useState("");
@@ -80,7 +80,7 @@ export default function EditModal({ open, onClose, title, subtitle, view, fields
 
   return (
     <div className="pm-overlay" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }} onKeyDown={onKeyDown}>
-      <div className="pm-frame">
+      <div className={`pm-frame${wide ? " wide" : ""}`}>
         <div className="pm-backplate" aria-hidden="true" />
         <section className={`pm-panel${shake ? " shake" : ""}`} role="dialog" aria-modal="true" aria-label={title} tabIndex={-1} ref={panelRef}>
           <header className="pm-head">
@@ -132,7 +132,7 @@ export default function EditModal({ open, onClose, title, subtitle, view, fields
 
           {mode === "edit" && (
             <form className="pm-body pm-form" onSubmit={submitEdit}>
-              {fields.map((f) => (
+              {custom ? custom(draft, setDraft) : fields.map((f) => (
                 <label key={f.key} className="pm-field">
                   <span className="pm-label">{f.label}</span>
                   {f.type === "textarea" ? (
@@ -192,6 +192,7 @@ export default function EditModal({ open, onClose, title, subtitle, view, fields
           20% { transform: translateX(-10px); } 40% { transform: translateX(10px); }
           60% { transform: translateX(-6px); } 80% { transform: translateX(6px); }
         }
+        .pm-frame.wide { width: min(96vw, 860px); }
         .pm-frame {
           position: relative;
           width: min(92vw, 640px);

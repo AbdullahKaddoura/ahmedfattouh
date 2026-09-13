@@ -117,9 +117,13 @@ Some text on the site can be changed from the site itself by whoever knows the e
 * **Future Persona** — each box: its name, subtitle, and text (click a box → EDIT).
 * **Socials** — username, status, and profile link per platform (EDIT DETAILS).
 * **About Me → About Me tab** — the bio paragraphs and the bottom line (EDIT in the footer strip).
+* **About Me → Favorite Games / Anime tabs** — add, remove, and reorder entries; each entry can show an
+  uploaded image or none (EDIT LIST in the footer strip). Uploads are shrunk in the browser and saved by
+  the server under `data/uploads/` (served at `/uploads/…`).
 
 The default password is `1509`; set the `EDIT_PASSWORD` environment variable on the server to change it.
 Edits are saved by the Express server into `data/content.json` (created on first save, not committed).
+The favicon is `public/favicon.png`. The Future Persona page lives at `/future-persona` (`/resume` redirects there).
 When the site is served without the Express server (for example the Vite dev server or a static host),
 edits are kept in that browser only. For local development with the API, run
 `PORT=3100 npm start` next to `npm run dev`; Vite proxies `/api` to it.

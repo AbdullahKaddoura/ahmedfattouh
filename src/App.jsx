@@ -1,10 +1,10 @@
-import { Routes, Route, useLocation, useNavigate } from 'react-router-dom'
+import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 import { useEffect, useState } from 'react'
 import menuBg from './assets/menu-bg.mp4'
 import P3Menu from './P3Menu'
 import VideoPage from './VideoPage'
-import ResumePage from './ResumePage'
+import FuturePersonaPage from './FuturePersonaPage'
 import PageTransition from './PageTransition'
 import Socials from './Socials'
 import AboutMe from './AboutMe'
@@ -497,9 +497,10 @@ function AnimatedRoutes() {
         <Route path="/about" element={
           <PageTransition variant="about"><AboutMe /></PageTransition>
         } />
-        <Route path="/resume" element={
-          <PageTransition><ResumePage /></PageTransition>
+        <Route path="/future-persona" element={
+          <PageTransition><FuturePersonaPage /></PageTransition>
         } />
+        <Route path="/resume" element={<Navigate to="/future-persona" replace />} />
         <Route path="/socials" element={
           <PageTransition variant="socials"><Socials /></PageTransition>
         } />

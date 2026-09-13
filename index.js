@@ -23,7 +23,11 @@ function readContent() {
   }
 }
 
-app.use(express.json({ limit: '200kb' }));
+app.use(express.json({ limit: '8mb' }));
+
+// Uploaded images (posters) live in data/uploads and are served at /uploads/<file>.
+const UPLOAD_DIR = path.join(DATA_DIR, 'uploads');
+app.use('/uploads', express.static(UPLOAD_DIR, { maxAge: '7d' }));
 
 app.get('/api/content', (req, res) => {
   res.set('Cache-Control', 'no-store');
@@ -41,6 +45,22 @@ app.put('/api/content', (req, res) => {
   fs.mkdirSync(DATA_DIR, { recursive: true });
   fs.writeFileSync(CONTENT_FILE, JSON.stringify(content, null, 2));
   res.json({ ok: true, content });
+});
+
+app.post('/api/upload', (req, res) => {
+  if (req.get('x-edit-password') !== EDIT_PASSWORD) {
+    return res.status(401).json({ ok: false, error: 'wrong password' });
+  }
+  const dataUrl = req.body?.dataUrl;
+  const m = typeof dataUrl === 'string' && dataUrl.match(/^data:image\/(png|jpeg|webp);base64,([A-Za-z0-9+/=]+)$/);
+  if (!m) return res.status(400).json({ ok: false, error: 'expected a png, jpeg or webp data URL' });
+  const ext = m[1] === 'jpeg' ? 'jpg' : m[1];
+  const buf = Buffer.from(m[2], 'base64');
+  if (buf.length > 5 * 1024 * 1024) return res.status(413).json({ ok: false, error: 'image too large' });
+  fs.mkdirSync(UPLOAD_DIR, { recursive: true });
+  const name = `${Date.now().toString(36)}-${Math.random().toString(36).slice(2, 8)}.${ext}`;
+  fs.writeFileSync(path.join(UPLOAD_DIR, name), buf);
+  res.json({ ok: true, url: `/uploads/${name}` });
 });
 
 app.post('/api/verify', (req, res) => {

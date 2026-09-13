@@ -22,7 +22,7 @@ const LINES = [
   { id: "black", x1: 12, y1: 95, x2: 72, y2: 42, stroke: "#05070c", width: 1.5, delay: 0.3 },
 ];
 
-export default function ResumePage() {
+export default function FuturePersonaPage() {
   const navigate = useNavigate();
   const [mounted, setMounted] = useState(false);
   const [hovered, setHovered] = useState(null);

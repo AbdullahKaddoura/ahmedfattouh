@@ -2,6 +2,7 @@ import { createElement, useCallback, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useContent } from "./useContent.js";
 import EditModal, { EditButton } from "./EditModal.jsx";
+import ListEditor from "./ListEditor.jsx";
 import { FaScaleBalanced, FaGamepad, FaFilm, FaArrowLeft } from "react-icons/fa6";
 import char1 from "./assets/char1.png";
 import char2 from "./assets/char2.png";
@@ -68,6 +69,7 @@ export default function AboutMe() {
   const [revealed, setRevealed] = useState(false);
   const [focus, setFocus] = useState(0);
   const [editingBio, setEditingBio] = useState(false);
+  const [editingList, setEditingList] = useState(false);
   const navigate = useNavigate();
   const { content, update } = useContent();
   const saveBio = async (values) => update((c) => ({
@@ -81,7 +83,7 @@ export default function AboutMe() {
   const goTab = useCallback((idx) => { setActive(idx); setFocus(0); }, []);
   const prevTab = useCallback(() => { setActive(i => (i - 1 + ITEMS.length) % ITEMS.length); setFocus(0); }, []);
   const nextTab = useCallback(() => { setActive(i => (i + 1) % ITEMS.length); setFocus(0); }, []);
-  const listLength = Array.isArray(REVEAL_CONTENT[active].upper) && active !== 0 ? REVEAL_CONTENT[active].upper.length : 0;
+  const listLength = active === 1 ? content.about.games.length : active === 2 ? content.about.anime.length : 0;
 
   useEffect(() => {
     const v = document.querySelector('video');
@@ -125,9 +127,20 @@ export default function AboutMe() {
 
   const section = active === 0
     ? { ...REVEAL_CONTENT[0], upper: content.about.bio, lower: content.about.focus }
-    : REVEAL_CONTENT[active];
+    : { ...REVEAL_CONTENT[active], upper: active === 1 ? content.about.games : content.about.anime };
+  const listKey = active === 1 ? "games" : "anime";
+  const saveList = async (values) => update((c) => ({
+    ...c,
+    about: {
+      ...c.about,
+      [listKey]: (values.items || [])
+        .map((it) => ({ id: it.id, title: it.title.trim(), meta: (it.meta || "").trim(), poster: it.poster || "", showImage: !!it.showImage && !!it.poster }))
+        .filter((it) => it.title),
+    },
+  }));
   const isBio = active === 0;
-  const featured = isBio ? null : section.upper[Math.min(focus, section.upper.length - 1)];
+  const featured = isBio || section.upper.length === 0 ? null : section.upper[Math.min(focus, section.upper.length - 1)];
+  const hasImage = (entry) => !!(entry && entry.showImage !== false && entry.poster);
 
   return (
     <div id="menu-screen">
@@ -176,8 +189,9 @@ export default function AboutMe() {
                 : (
                   <div className="am-gallery">
                     <ol className="am-reveal-list" aria-label={section.lower}>
+                      {section.upper.length === 0 && <li className="am-list-empty">Nothing here yet.</li>}
                       {section.upper.map((entry, idx) => (
-                        <li key={entry.title}>
+                        <li key={entry.id || `${entry.title}-${idx}`}>
                           <button
                             type="button"
                             className={`am-reveal-upper-line${idx === focus ? " focused" : ""}`}
@@ -187,7 +201,9 @@ export default function AboutMe() {
                             onClick={() => setFocus(idx)}
                           >
                             <span className="am-reveal-num">{pad2(idx)}</span>
-                            <img className="am-reveal-thumb" src={entry.poster} alt="" loading="lazy" />
+                            {hasImage(entry)
+                              ? <img className="am-reveal-thumb" src={entry.poster} alt="" loading="lazy" />
+                              : <span className="am-reveal-thumb am-noimg" aria-hidden="true">{createElement(section.icon)}</span>}
                             <span className="am-reveal-text">
                               <span className="am-reveal-title-line">{entry.title}</span>
                               <span className="am-reveal-meta">{entry.meta}</span>
@@ -197,18 +213,29 @@ export default function AboutMe() {
                       ))}
                     </ol>
 
-                    <figure className="am-spotlight" key={`spot-${active}-${focus}`}>
-                      <div className="am-spotlight-backplate" aria-hidden="true" />
-                      <div className="am-spotlight-frame">
-                        <img className="am-spotlight-bg" src={featured.poster} alt="" aria-hidden="true" />
-                        <img className="am-spotlight-img" src={featured.poster} alt={featured.alt} />
-                        <span className="am-spotlight-badge">{pad2(focus)}</span>
-                      </div>
-                      <figcaption className="am-spotlight-caption">
-                        <span className="am-spotlight-title">{featured.title}</span>
-                        <span className="am-spotlight-meta">{featured.meta}</span>
-                      </figcaption>
-                    </figure>
+                    {featured && (
+                      <figure className="am-spotlight" key={`spot-${active}-${focus}`}>
+                        <div className="am-spotlight-backplate" aria-hidden="true" />
+                        <div className="am-spotlight-frame">
+                          {hasImage(featured) ? (
+                            <>
+                              <img className="am-spotlight-bg" src={featured.poster} alt="" aria-hidden="true" />
+                              <img className="am-spotlight-img" src={featured.poster} alt={featured.alt || featured.title} />
+                            </>
+                          ) : (
+                            <div className="am-spotlight-empty" aria-hidden="true">
+                              {createElement(section.icon)}
+                              <span>NO IMAGE</span>
+                            </div>
+                          )}
+                          <span className="am-spotlight-badge">{pad2(Math.min(focus, section.upper.length - 1))}</span>
+                        </div>
+                        <figcaption className="am-spotlight-caption">
+                          <span className="am-spotlight-title">{featured.title}</span>
+                          <span className="am-spotlight-meta">{featured.meta}</span>
+                        </figcaption>
+                      </figure>
+                    )}
                   </div>
                 )}
             </div>
@@ -219,6 +246,7 @@ export default function AboutMe() {
               </span>
               <span className="am-reveal-lower-text">{section.lower}</span>
               {isBio && <EditButton onClick={() => setEditingBio(true)} />}
+              {!isBio && <EditButton onClick={() => setEditingList(true)} label="EDIT LIST" />}
               {featured && (
                 <span className="am-reveal-counter" aria-label={`Item ${focus + 1} of ${section.upper.length}`}>
                   <span className="am-reveal-counter-cur">{pad2(focus)}</span>
@@ -231,6 +259,7 @@ export default function AboutMe() {
           </div>
 
           <div className={`am-main-portrait-shell${mounted ? " mounted" : ""}`}>
+            <img className="am-main-portrait-bg" src={MAIN_IMAGES[active]} alt="" aria-hidden="true" />
             <img
               key={active}
               className="am-main-portrait"
@@ -240,6 +269,16 @@ export default function AboutMe() {
           </div>
         </div>
       )}
+
+      <EditModal
+        open={editingList}
+        wide
+        onClose={() => setEditingList(false)}
+        title={section.lower}
+        values={{ items: isBio ? [] : section.upper.map((it, i) => ({ id: it.id || `e-${i}`, title: it.title, meta: it.meta || "", poster: it.poster || "", showImage: it.showImage !== false && !!it.poster })) }}
+        custom={(draft, setDraft) => <ListEditor draft={draft} setDraft={setDraft} placeholderIcon={createElement(section.icon)} />}
+        onSave={saveList}
+      />
 
       <EditModal
         open={editingBio}
@@ -546,6 +585,20 @@ export default function AboutMe() {
           box-shadow: 2px 2px 0 rgba(0, 0, 0, 0.6);
           background: #000;
         }
+        .am-noimg {
+          display: inline-flex; align-items: center; justify-content: center;
+          background: rgba(141, 246, 255, 0.12); color: var(--p3-blue-light); font-size: 14px;
+        }
+        .am-list-empty { padding: 10px 6px; color: rgba(255,255,255,0.6); font-style: italic; }
+        .am-spotlight-empty {
+          position: absolute; inset: 0;
+          display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 10px;
+          color: rgba(141, 246, 255, 0.85);
+          font-family: 'Bebas Neue', sans-serif; font-size: 18px; letter-spacing: 3px;
+          background: repeating-linear-gradient(-45deg, rgba(141,246,255,0.07) 0 8px, transparent 8px 16px);
+        }
+        .am-spotlight-empty svg { font-size: 34px; }
+        .am-main-portrait-bg { display: none; }
         .am-reveal-text { display: flex; flex-direction: column; min-width: 0; }
         .am-reveal-title-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .am-reveal-meta {
@@ -1004,13 +1057,16 @@ export default function AboutMe() {
           .am-reveal-stage {
             display: flex;
             flex-direction: column;
-            padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+            /* leave room for the fixed BACK button so the panel never sits under it */
+            padding-bottom: calc(78px + env(safe-area-inset-bottom, 0px));
           }
           .am-main-portrait-shell,
           .am-main-portrait-shell.mounted {
             position: relative;
             order: 0;
-            flex: 0 0 32%;
+            flex: 0 0 36%;
+            overflow: hidden;
+            background: #05081c;
             width: 100%;
             height: auto;
             top: auto; right: auto; left: auto;
@@ -1020,7 +1076,12 @@ export default function AboutMe() {
             box-shadow: 0 6px 0 var(--p3-red-accent);
             z-index: 1;
           }
-          .am-main-portrait { transform: none; object-position: 50% 12%; }
+          /* whole portrait visible, letterboxed over a blurred copy of itself */
+          .am-main-portrait { position: relative; z-index: 1; transform: none; object-fit: contain; object-position: center; }
+          .am-main-portrait-bg {
+            display: block; position: absolute; inset: 0; width: 100%; height: 100%;
+            object-fit: cover; transform: scale(1.15); filter: blur(16px) brightness(0.55) saturate(1.2);
+          }
           .am-reveal-frame {
             position: relative;
             order: 1;

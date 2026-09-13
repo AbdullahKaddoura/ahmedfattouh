@@ -20,6 +20,22 @@ export const DEFAULT_CONTENT = {
     discord: { user: "@d1n0B", status: "Active", url: "https://discord.com/users/718015166717100073" },
   },
   about: {
+    games: [
+      { id: "rdr2", title: "Red Dead Redemption 2", meta: "2018 · Rockstar Games", poster: "/about/posters/rdr2.jpg", showImage: true },
+      { id: "fallout", title: "Fallout", meta: "1997 · Interplay", poster: "/about/posters/fallout.jpg", showImage: true },
+      { id: "persona", title: "Persona series", meta: "Atlus · since 1996", poster: "/about/posters/persona.jpg", showImage: true },
+      { id: "ace-attorney", title: "Ace Attorney", meta: "2001 · Capcom", poster: "/about/posters/ace-attorney.jpg", showImage: true },
+      { id: "gta5", title: "Grand Theft Auto 5", meta: "2013 · Rockstar Games", poster: "/about/posters/gta5.jpg", showImage: true },
+      { id: "danganronpa", title: "Danganronpa", meta: "2010 · Spike", poster: "/about/posters/danganronpa.jpg", showImage: true },
+      { id: "umineko", title: "Umineko When They Cry", meta: "2007 · 07th Expansion", poster: "/about/posters/umineko.jpg", showImage: true },
+    ],
+    anime: [
+      { id: "dbz", title: "Dragon Ball Z", meta: "1989 · Toei Animation", poster: "/about/posters/dbz.jpg", showImage: true },
+      { id: "evangelion", title: "Neon Genesis Evangelion", meta: "1995 · Gainax", poster: "/about/posters/evangelion.jpg", showImage: true },
+      { id: "chainsaw-man", title: "Chainsaw Man", meta: "2022 · MAPPA", poster: "/about/posters/chainsaw-man.jpg", showImage: true },
+      { id: "lain", title: "Serial Experiments Lain", meta: "1998 · Triangle Staff", poster: "/about/posters/lain.jpg", showImage: true },
+      { id: "steven-universe", title: "Steven Universe", meta: "2013 · Cartoon Network", poster: "/about/posters/steven-universe.jpg", showImage: true },
+    ],
     bio: [
       "I am Ahmed Fattouh, aka Dino. I am a calm and collected, stylish workaholic with a strong enthusiasm for visual novels, gaming, and anime.",
       "I love all of my friends and family and am strongly motivated and passionate about my work and everything I enjoy and do.",
@@ -42,10 +58,13 @@ export function mergeContent(defaults, stored) {
     );
   }
   if (stored.about) {
+    const list = (arr, fallback) => (Array.isArray(arr) ? arr.filter((e) => e && typeof e.title === "string") : fallback);
     out.about = {
       ...defaults.about,
       ...stored.about,
       bio: Array.isArray(stored.about.bio) && stored.about.bio.length ? stored.about.bio : defaults.about.bio,
+      games: list(stored.about.games, defaults.about.games),
+      anime: list(stored.about.anime, defaults.about.anime),
     };
   }
   return out;
@@ -95,5 +114,41 @@ export async function saveContent(content, password) {
     if (password !== EDIT_PASSWORD) return { ok: false, error: "wrong password" };
     writeLocal(content);
     return { ok: true, source: "local" };
+  }
+}
+
+// Shrinks an image file in the browser and returns a JPEG data URL.
+export function fileToDataUrl(file, maxEdge = 720) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    const url = URL.createObjectURL(file);
+    img.onload = () => {
+      const scale = Math.min(1, maxEdge / Math.max(img.width, img.height));
+      const canvas = document.createElement("canvas");
+      canvas.width = Math.round(img.width * scale);
+      canvas.height = Math.round(img.height * scale);
+      canvas.getContext("2d").drawImage(img, 0, 0, canvas.width, canvas.height);
+      URL.revokeObjectURL(url);
+      resolve(canvas.toDataURL("image/jpeg", 0.86));
+    };
+    img.onerror = () => { URL.revokeObjectURL(url); reject(new Error("Could not read that image.")); };
+    img.src = url;
+  });
+}
+
+// Uploads an image to the server; without a server the data URL itself is used.
+export async function uploadImage(dataUrl) {
+  try {
+    const r = await fetch("/api/upload", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", "x-edit-password": EDIT_PASSWORD },
+      body: JSON.stringify({ dataUrl }),
+    });
+    if (!r.ok || !(r.headers.get("content-type") || "").includes("json")) throw new Error("no api");
+    const d = await r.json();
+    if (!d.ok) throw new Error(d.error || "upload failed");
+    return { ok: true, url: d.url, source: "api" };
+  } catch {
+    return { ok: true, url: dataUrl, source: "local" };
   }
 }

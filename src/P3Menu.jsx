@@ -4,7 +4,7 @@ import menuBg from "./assets/menu-bg.mp4";
 // Main menu in the style of the Persona 3 Reload pause menu.
 const ITEMS = [
   { id: "about",   label: "ABOUT ME",       page: "about",   description: "View Profile",        rotation: -15, zIndex: 0, offsetX: 0,   offsetY: 30 },
-  { id: "resume",  label: "FUTURE PERSONA", page: "resume",  description: "View Future Flans",   rotation: -20, zIndex: 1, offsetX: -50, offsetY: 35 },
+  { id: "resume",  label: "FUTURE PERSONA", page: "future-persona",  description: "View Future Flans",   rotation: -20, zIndex: 1, offsetX: -50, offsetY: 35 },
   { id: "socials", label: "SOCIALS",        page: "socials", description: "View Social Links",   rotation: -8,  zIndex: 2, offsetX: -20, offsetY: 20 },
   { id: "music",   label: "MUSIC",          page: "music",   description: "Play the Soundtrack", rotation: 8,   zIndex: 0, offsetX: 0,   offsetY: 0 },
 ];

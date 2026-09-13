@@ -103,6 +103,7 @@ export default function MusicPage() {
   const [manualCursor, setManualCursor] = useState(null);
   const [durations, setDurations] = useState({});
   const [lastVolume, setLastVolume] = useState(1);
+  const [listHidden, setListHidden] = useState(false);
   const progressRef = useRef(null);
   const videoRef = useRef(null);
   const currentRowRef = useRef(null);
@@ -164,6 +165,7 @@ export default function MusicPage() {
       if (e.key === "ArrowUp") { e.preventDefault(); setCursor((cursor - 1 + tracks.length) % tracks.length); }
       if (e.key === "ArrowDown") { e.preventDefault(); setCursor((cursor + 1) % tracks.length); }
       if (e.key === "Enter") player.selectTrack(tracks[cursor]);
+      if (e.key === "l" || e.key === "L") setListHidden((h) => !h);
       if (e.key === "ArrowRight") player.seekBy(5);
       if (e.key === "ArrowLeft") player.seekBy(-5);
       if (e.key === "Escape" || e.key === "Backspace") navigate("/");
@@ -193,7 +195,7 @@ export default function MusicPage() {
   const progress = duration ? Math.min(1, currentTime / duration) : 0;
 
   return (
-    <div id="menu-screen" className="mu-screen">
+    <div id="menu-screen" className={`mu-screen${listHidden ? " list-hidden" : ""}`}>
       <video ref={videoRef} src={BG_VIDEO} autoPlay muted playsInline preload="auto" />
       <div className="mu-dim" aria-hidden="true" />
 
@@ -238,6 +240,26 @@ export default function MusicPage() {
           transform: skewX(-8deg);
           text-shadow: 4px 4px 0 var(--p3-red-accent), 8px 8px 0 rgba(0,0,0,0.5);
         }
+
+        .mu-list-toggle {
+          align-self: flex-start;
+          margin-top: 8px;
+          min-height: 34px;
+          padding: 6px 14px;
+          font-family: 'Bebas Neue', sans-serif;
+          font-size: 16px;
+          letter-spacing: 2px;
+          color: var(--p3-blue-light);
+          background: rgba(0, 0, 0, 0.7);
+          border: 1px solid rgba(141, 246, 255, 0.45);
+          clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
+          cursor: pointer;
+          pointer-events: auto;
+          transition: background 0.18s ease, color 0.18s ease;
+        }
+        .mu-list-toggle:hover { background: var(--p3-blue-light); color: #000; }
+        .mu-list-toggle:focus-visible { outline: 3px solid #fff; outline-offset: -4px; }
+        .mu-list.hidden { display: none; }
 
         /* ── Track list (left) ── */
         .mu-list {
@@ -667,6 +689,8 @@ export default function MusicPage() {
           .mu-track-title { font-size: 19px; letter-spacing: 2px; }
           .mu-track-len { font-size: 14px; }
           .mu-stage { position: relative; top: auto; right: auto; transform: none; width: 100%; margin-top: 10px; flex: 0 0 auto; }
+          .mu-screen.list-hidden .mu-stage { margin-top: auto; }
+          .mu-list-toggle { margin-top: 6px; min-height: 32px; font-size: 15px; }
           .mu-backplate { transform: translate(8px, 8px); }
           .mu-panel { padding: 10px 34px 10px 12px; gap: 8px; }
           .mu-now { gap: 12px; }
@@ -717,9 +741,12 @@ export default function MusicPage() {
       <header className={`mu-head${mounted ? " mounted" : ""}`}>
         <span className="mu-head-eyebrow">SOUNDTRACK</span>
         <h1 className="mu-head-title">MUSIC</h1>
+        <button type="button" className="mu-list-toggle" onClick={() => setListHidden((h) => !h)} aria-pressed={listHidden}>
+          {listHidden ? "▸ SHOW LIST" : "▾ HIDE LIST"}
+        </button>
       </header>
 
-      <ol className="mu-list" aria-label="Tracks">
+      <ol className={`mu-list${listHidden ? " hidden" : ""}`} aria-label="Tracks">
         {tracks.map((track, i) => {
           const isCurrent = current?.id === track.id;
           return (
