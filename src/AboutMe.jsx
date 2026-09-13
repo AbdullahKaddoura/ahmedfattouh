@@ -266,6 +266,10 @@ export default function AboutMe() {
               src={MAIN_IMAGES[active]}
               alt=""
             />
+            <div className="am-cutin-label" aria-hidden="true">
+              <span className="am-cutin-num">{pad2(active)}</span>
+              <span className="am-cutin-text">{ITEMS[active].label}</span>
+            </div>
           </div>
         </div>
       )}
@@ -599,6 +603,7 @@ export default function AboutMe() {
         }
         .am-spotlight-empty svg { font-size: 34px; }
         .am-main-portrait-bg { display: none; }
+        .am-cutin-label { display: none; }
         .am-reveal-text { display: flex; flex-direction: column; min-width: 0; }
         .am-reveal-title-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .am-reveal-meta {
@@ -1060,11 +1065,13 @@ export default function AboutMe() {
             /* leave room for the fixed BACK button so the panel never sits under it */
             padding-bottom: calc(78px + env(safe-area-inset-bottom, 0px));
           }
+          /* P3R-style cut-in: the character's own colour splashed across the band,
+             white + red slashes, the face in a slanted card, the tab name as a big label. */
           .am-main-portrait-shell,
           .am-main-portrait-shell.mounted {
             position: relative;
             order: 0;
-            flex: 0 0 36%;
+            flex: 0 0 38%;
             overflow: hidden;
             background: #05081c;
             width: 100%;
@@ -1073,15 +1080,56 @@ export default function AboutMe() {
             opacity: 1;
             transform: none;
             animation: none;
-            box-shadow: 0 6px 0 var(--p3-red-accent);
+            box-shadow: none;
             z-index: 1;
           }
-          /* whole portrait visible, letterboxed over a blurred copy of itself */
-          .am-main-portrait { position: relative; z-index: 1; transform: none; object-fit: contain; object-position: center; }
           .am-main-portrait-bg {
-            display: block; position: absolute; inset: 0; width: 100%; height: 100%;
-            object-fit: cover; transform: scale(1.15); filter: blur(16px) brightness(0.55) saturate(1.2);
+            display: block; position: absolute; inset: -15%; width: 130%; height: 130%;
+            object-fit: cover; filter: blur(34px) saturate(1.7) brightness(0.95);
           }
+          .am-main-portrait-shell::before {
+            content: ""; position: absolute; z-index: 1;
+            left: -12%; right: -12%; top: 60%; height: 13%;
+            background: #fff; transform: rotate(-11deg);
+          }
+          .am-main-portrait-shell::after {
+            content: ""; position: absolute; z-index: 1;
+            left: -12%; right: -12%; top: 76%; height: 4%;
+            background: var(--p3-red-accent); transform: rotate(-11deg);
+          }
+          .am-main-portrait {
+            position: absolute; z-index: 2;
+            right: -4vw; top: 3%;
+            width: 60vw; height: 94%;
+            object-fit: cover; object-position: center 18%;
+            transform: none;
+            clip-path: polygon(18% 0, 100% 0, 100% 100%, 0 100%);
+            filter: drop-shadow(-8px 8px 0 rgba(0, 0, 0, 0.75));
+            animation: am-cutin-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+          }
+          @keyframes am-cutin-in {
+            0%   { opacity: 0; transform: translateX(40px) skewX(-8deg); }
+            100% { opacity: 1; transform: translateX(0) skewX(0); }
+          }
+          .am-cutin-label {
+            display: flex; flex-direction: column; align-items: flex-start; gap: 4px;
+            position: absolute; z-index: 3; left: 4vw; bottom: 9%;
+          }
+          .am-cutin-num {
+            font-family: 'Bebas Neue', sans-serif; font-size: 15px; letter-spacing: 4px;
+            color: #fff; background: #000; padding: 2px 10px 1px;
+            clip-path: polygon(0 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
+          }
+          .am-cutin-text {
+            font-family: 'Bebas Neue', sans-serif; font-size: clamp(34px, 10vw, 44px);
+            line-height: 0.95; letter-spacing: 2px; color: #fff;
+            transform: skewX(-8deg); transform-origin: left bottom;
+            text-shadow: 3px 3px 0 #000, 6px 6px 0 var(--p3-red-accent);
+            max-width: 46vw;
+          }
+          /* the panel's own title is redundant under the cut-in */
+          .am-reveal-eyebrow, .am-reveal-title { display: none; }
+          .am-reveal-head { padding-bottom: 6px; }
           .am-reveal-frame {
             position: relative;
             order: 1;
@@ -1091,7 +1139,8 @@ export default function AboutMe() {
             transform: none;
             width: auto;
             max-height: none;
-            margin: 12px 2vw 0;
+            margin: -10px 2vw 0;
+            z-index: 2;
           }
           .am-reveal-panel { flex: 1 1 auto; min-height: 0; max-height: none; padding: 12px 30px 12px 14px; gap: 10px; }
           .am-reveal-head { flex-direction: column; align-items: flex-start; gap: 8px; padding-bottom: 8px; }
