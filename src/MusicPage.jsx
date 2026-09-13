@@ -198,7 +198,7 @@ export default function MusicPage() {
       <div className="mu-dim" aria-hidden="true" />
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700&family=Montserrat:wght@400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700&display=swap');
 
         .mu-dim {
           position: absolute;
@@ -478,7 +478,7 @@ export default function MusicPage() {
           text-shadow: 3px 3px 0 rgba(0,0,0,0.55);
         }
         .mu-now-album {
-          font-family: 'Montserrat', sans-serif;
+          font-family: 'NewRodin Pro', sans-serif;
           font-size: 11px;
           letter-spacing: 2px;
           color: rgba(255,255,255,0.6);

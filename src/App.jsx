@@ -1,10 +1,7 @@
 import { Routes, Route, useLocation, useNavigate } from 'react-router-dom'
 import { AnimatePresence } from 'framer-motion'
 import { useEffect, useState } from 'react'
-import menuVideo from './assets/Mainn.mp4'
-import menuLoopVideo from './assets/Mainn_1.mp4'
-import main1 from './assets/main1.mp4'
-import main3 from './assets/main3.mp4'
+import menuBg from './assets/menu-bg.mp4'
 import P3Menu from './P3Menu'
 import VideoPage from './VideoPage'
 import ResumePage from './ResumePage'
@@ -14,40 +11,18 @@ import AboutMe from './AboutMe'
 import MusicPage from './MusicPage'
 import './App.css'
 
-function BackgroundVideo({ intro, loop, ...props }) {
-  const [showLoop, setShowLoop] = useState(false);
-
+function BackgroundVideo({ src, ...props }) {
   return (
-    <div style={{ position: 'fixed', inset: 0, zIndex: -1, background: '#000' }}>
+    <div style={{ position: 'fixed', inset: 0, zIndex: -1, background: '#015FCC' }}>
       <video
         {...props}
         className="menu-bg-video"
-        src={intro}
-        autoPlay
-        muted
-        playsInline
-        style={{ 
-          position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
-          zIndex: showLoop ? 1 : 2,
-          opacity: showLoop ? 0 : 1,
-          transition: 'opacity 0.4s ease-in-out'
-        }}
-        onEnded={() => setShowLoop(true)}
-      />
-      <video
-        {...props}
-        className="menu-bg-video"
-        src={loop}
+        src={src}
         autoPlay
         loop
         muted
         playsInline
-        style={{ 
-          position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover',
-          zIndex: showLoop ? 2 : 1,
-          opacity: showLoop ? 1 : 0,
-          transition: 'opacity 0.4s ease-in-out'
-        }}
+        style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }}
       />
     </div>
   );
@@ -64,7 +39,6 @@ function MenuScreen() {
 
   return (
     <div id="menu-screen">
-      <BackgroundVideo intro={menuVideo} loop={menuLoopVideo} />
       <P3Menu onNavigate={(page) => {
         navigate(`/${page}`)
       }} />
@@ -157,7 +131,7 @@ function SideProjectsPage() {
 
   return (
     <div id="menu-screen">
-      <BackgroundVideo intro={menuVideo} loop={menuLoopVideo} />
+      <BackgroundVideo src={menuBg} />
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Anton&family=Bebas+Neue&family=Barlow+Condensed:ital,wght@0,400;0,700;1,700&family=Montserrat:wght@300&display=swap');
         

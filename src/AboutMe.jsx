@@ -214,22 +214,20 @@ export default function AboutMe() {
             </footer>
           </section>
           </div>
-        </div>
-      )}
 
-      {revealed && (
-        <div className={`am-main-portrait-shell${mounted ? " mounted" : ""}`}>
-          <img
-            key={active}
-            className="am-main-portrait"
-            src={MAIN_IMAGES[active]}
-            alt=""
-          />
+          <div className={`am-main-portrait-shell${mounted ? " mounted" : ""}`}>
+            <img
+              key={active}
+              className="am-main-portrait"
+              src={MAIN_IMAGES[active]}
+              alt=""
+            />
+          </div>
         </div>
       )}
 
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;1,700&family=Montserrat:wght@300;400;500&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;1,700&display=swap');
 
         .am-root {
           position: absolute;
@@ -447,7 +445,7 @@ export default function AboutMe() {
         }
         .am-bio-content { justify-content: center; padding-top: 28px; padding-bottom: 28px; }
         .am-bio-content .am-reveal-upper-line {
-          font-family: 'Montserrat', sans-serif;
+          font-family: 'NewRodin Pro', sans-serif;
           font-weight: 400;
           font-size: clamp(16px, 1.2vw, 20px);
           line-height: 1.65;
@@ -524,7 +522,7 @@ export default function AboutMe() {
         .am-reveal-text { display: flex; flex-direction: column; min-width: 0; }
         .am-reveal-title-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .am-reveal-meta {
-          font-family: 'Montserrat', sans-serif;
+          font-family: 'NewRodin Pro', sans-serif;
           font-weight: 400;
           font-size: 11px;
           letter-spacing: 0.3px;
@@ -619,7 +617,7 @@ export default function AboutMe() {
           color: #fff;
         }
         .am-spotlight-meta {
-          font-family: 'Montserrat', sans-serif;
+          font-family: 'NewRodin Pro', sans-serif;
           font-size: 11px;
           letter-spacing: 0.4px;
           color: rgba(255, 255, 255, 0.65);
@@ -972,22 +970,42 @@ export default function AboutMe() {
           .am-favorites-content .am-reveal-upper-line { font-size: 16px; }
           .am-right-nav .am-nav-btn { font-size: 40px; }
         }
-        /* Portrait phones: character banner on top, panel below, big poster, no LB/RB. */
+        /* Portrait phones: a simple top-to-bottom column — character banner, then the panel.
+           Nothing is absolutely positioned here, so nothing can overlap. */
         @media (max-width: 720px) {
           .am-right-nav { display: none; }
+          .am-reveal-stage {
+            display: flex;
+            flex-direction: column;
+            padding-bottom: calc(8px + env(safe-area-inset-bottom, 0px));
+          }
           .am-main-portrait-shell,
           .am-main-portrait-shell.mounted {
-            top: 0; right: 0; left: 0;
-            width: 100vw; height: 34vh;
+            position: relative;
+            order: 0;
+            flex: 0 0 32%;
+            width: 100%;
+            height: auto;
+            top: auto; right: auto; left: auto;
             opacity: 1;
             transform: none;
             animation: none;
             box-shadow: 0 6px 0 var(--p3-red-accent);
-            z-index: 15;
+            z-index: 1;
           }
           .am-main-portrait { transform: none; object-position: 50% 12%; }
-          .am-reveal-frame { top: auto; bottom: calc(10px + env(safe-area-inset-bottom, 0px)); transform: none; left: 2vw; width: 96vw; max-height: 63vh; }
-          .am-reveal-panel { min-height: 0; max-height: 63vh; padding: 12px 30px 12px 14px; gap: 10px; }
+          .am-reveal-frame {
+            position: relative;
+            order: 1;
+            flex: 1 1 auto;
+            min-height: 0;
+            top: auto; left: auto; bottom: auto;
+            transform: none;
+            width: auto;
+            max-height: none;
+            margin: 12px 2vw 0;
+          }
+          .am-reveal-panel { flex: 1 1 auto; min-height: 0; max-height: none; padding: 12px 30px 12px 14px; gap: 10px; }
           .am-reveal-head { flex-direction: column; align-items: flex-start; gap: 8px; padding-bottom: 8px; }
           .am-reveal-eyebrow { display: none; }
           .am-reveal-title { font-size: 30px; letter-spacing: 2px; }
@@ -1000,7 +1018,8 @@ export default function AboutMe() {
           .am-favorites-content { padding: 12px 14px; }
           .am-gallery { grid-template-columns: 1fr; gap: 12px; }
           .am-spotlight { order: -1; width: 100%; flex-direction: row; align-items: flex-start; gap: 14px; }
-          .am-spotlight-backplate, .am-spotlight-frame { width: 40vw; aspect-ratio: 2 / 3; }
+          .am-spotlight-frame { flex: 0 0 40vw; width: 40vw; aspect-ratio: 2 / 3; }
+          .am-spotlight-backplate { width: 40vw; height: auto; aspect-ratio: 2 / 3; }
           .am-spotlight-caption { padding-top: 6px; padding-bottom: 0; }
           .am-spotlight-title { font-size: 20px; }
           .am-reveal-list { grid-template-columns: 1fr; }

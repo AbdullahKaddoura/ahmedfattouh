@@ -1,319 +1,377 @@
-import { useState, useEffect } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
+import menuBg from "./assets/menu-bg.mp4";
 
+// Main menu in the style of the Persona 3 Reload pause menu.
 const ITEMS = [
-  { id: "about",   label: "ABOUT ME",      page: "about",   fontSize: 80, offsetX: 0,  offsetY: 0,  skew: -6,  skewY: 10  },
-  { id: "resume",  label: "FUTURE PERSONA", page: "resume",  fontSize: 58, offsetX: 20, offsetY: 8,  skew: -11, skewY: -10 },
-  { id: "socials", label: "SOCIALS",       page: "socials", fontSize: 74, offsetX: 16, offsetY: 8,  skew: -3,  skewY: 5   },
-  { id: "music",   label: "MUSIC",         page: "music",   fontSize: 72, offsetX: 10, offsetY: 6,  skew: -4,  skewY: 7   },
+  { id: "about",   label: "ABOUT ME",       page: "about",   description: "View profile",        rotation: -15, zIndex: 0, offsetX: 0,   offsetY: 30 },
+  { id: "resume",  label: "FUTURE PERSONA", page: "resume",  description: "View future plans",   rotation: -20, zIndex: 1, offsetX: -50, offsetY: 35 },
+  { id: "socials", label: "SOCIALS",        page: "socials", description: "View Social Links",   rotation: -8,  zIndex: 2, offsetX: -20, offsetY: 20 },
+  { id: "music",   label: "MUSIC",          page: "music",   description: "Play the soundtrack", rotation: 8,   zIndex: 0, offsetX: 0,   offsetY: 0 },
 ];
 
-const CLIP_SHAPES = [
-  (w, h) => `polygon(0px 0px, ${w}px ${h * 0.5}px, 0px ${h}px)`,
-  (w, h) => `polygon(0px 0px, ${w}px ${h * 0.5}px, 0px ${h}px)`,
-  (w, h) => `polygon(0px 0px, ${w}px ${h * 0.5}px, 0px ${h}px)`,
-  (w, h) => `polygon(0px 0px, ${w}px ${h * 0.5}px, 0px ${h}px)`,
-  (w, h) => `polygon(0px 0px, ${w}px ${h * 0.5}px, 0px ${h}px)`,
-];
+const COLORS = ["#16CFFB", "#7DE6FD", "#77FEFC"];
+const SELECTOR_PATH = "M 24.853754,93.31573 135.14625,49.684266 114.14751,97.331142 Z";
+const SELECTOR_BG_PATH = "M 12.7428765,95.50088 144.25712,47.499123 116.75625,95.465764 Z";
+const NAV_SOUND = "/sfx/navigation.wav";
+
+function MenuOption({ item, index, isSelected, onSelect, onConfirm }) {
+  const maskId = `p3r-mask-${item.id}`;
+  const stretch = item.label.replaceAll(" ", "").length * 0.5 + 1.5;
+  const selectorTransform = `translate(-60, -10) rotate(8, 0, 100) scale(${stretch}, 3)`;
+  const color = COLORS[(index + 2) % COLORS.length];
+
+  return (
+    <div className={`p3r-opt${isSelected ? " selected" : ""}`} style={{ zIndex: isSelected ? 5 : item.zIndex }}>
+      <button
+        type="button"
+        className="p3r-opt-hit"
+        onMouseEnter={onSelect}
+        onFocus={onSelect}
+        onClick={onConfirm}
+        aria-label={`${item.label}: ${item.description}`}
+        aria-current={isSelected ? "page" : undefined}
+      />
+      <svg
+        className="p3r-opt-svg"
+        viewBox="0 0 950 200"
+        style={{ "--ox": item.offsetX, "--oy": item.offsetY, "--rot": `${item.rotation}deg` }}
+        aria-hidden="true"
+      >
+        <defs>
+          <mask id={maskId} maskUnits="userSpaceOnUse" x="0" y="0" width="950" height="200">
+            <rect width="100%" height="100%" fill="black" />
+            <g transform={selectorTransform} className="p3r-selector">
+              <path fill="white" d={SELECTOR_PATH} />
+              <path className="p3r-tri-blink" fill="white" d={SELECTOR_BG_PATH} />
+            </g>
+          </mask>
+        </defs>
+
+        {isSelected && (
+          <g transform={selectorTransform} className="p3r-selector">
+            <path className="p3r-tri-blink p3r-tri-pink" d={SELECTOR_BG_PATH} />
+            <path fill="#fff" d={SELECTOR_PATH} />
+          </g>
+        )}
+
+        <text x="150" y="120" className="p3r-text" fill={isSelected ? "#000" : color}>
+          {item.label}
+        </text>
+
+        {isSelected && (
+          <g mask={`url(#${maskId})`}>
+            <text x="150" y="120" className="p3r-text" fill="#F00">{item.label}</text>
+          </g>
+        )}
+      </svg>
+    </div>
+  );
+}
 
 export default function P3Menu({ onNavigate }) {
   const [active, setActive] = useState(0);
   const [mounted, setMounted] = useState(false);
-  const [animKey, setAnimKey] = useState(0);
-  const [scale, setScale] = useState(1);
+  const [optWidth, setOptWidth] = useState(950);
+  const soundRef = useRef(null);
 
-  // The menu was designed in pixels for a desktop screen; scale it down on smaller viewports.
+  // Options are drawn in a 950x200 coordinate space; pick how wide that space is on this screen.
   useEffect(() => {
     const measure = () => {
-      const s = Math.min(1, window.innerWidth / 1180, window.innerHeight / 760);
-      setScale(Math.max(0.42, s));
+      const vw = window.innerWidth, vh = window.innerHeight;
+      let w;
+      if (vw <= 720) w = vw * 1.12;
+      else if (vh <= 520) w = Math.min(700, Math.max(440, vw * 0.52));
+      else if (vw <= 1100) w = Math.min(950, Math.max(520, vw * 0.7));
+      else w = Math.min(950, Math.max(560, vw * 0.62));
+      setOptWidth(Math.round(w));
     };
     measure();
     window.addEventListener("resize", measure);
     return () => window.removeEventListener("resize", measure);
   }, []);
 
-  const activate = (idx) => {
-    setActive(idx);
-    setAnimKey(k => k + 1);
-  };
-
   useEffect(() => {
-    const t = setTimeout(() => setMounted(true), 1000);
+    const t = setTimeout(() => setMounted(true), 200);
     return () => clearTimeout(t);
+  }, []);
+
+  const select = useCallback((idx) => {
+    setActive((prev) => {
+      if (prev === idx) return prev;
+      try {
+        if (!soundRef.current) { soundRef.current = new Audio(NAV_SOUND); soundRef.current.volume = 0.5; }
+        soundRef.current.currentTime = 0;
+        soundRef.current.play().catch(() => {});
+      } catch { /* sound is optional */ }
+      return idx;
+    });
   }, []);
 
   useEffect(() => {
     const onKey = (e) => {
-      if (e.key === "ArrowUp")   activate(Math.max(0, active - 1));
-      if (e.key === "ArrowDown") activate(Math.min(ITEMS.length - 1, active + 1));
-      if (e.key === "Enter")     onNavigate?.(ITEMS[active].page);
+      if (e.key === "ArrowDown" || e.key === "s") select((active + 1) % ITEMS.length);
+      if (e.key === "ArrowUp" || e.key === "w") select((active - 1 + ITEMS.length) % ITEMS.length);
+      if (e.key === "Enter") onNavigate?.(ITEMS[active].page);
     };
     window.addEventListener("keydown", onKey);
     return () => window.removeEventListener("keydown", onKey);
-  }, [active]);
+  }, [active, onNavigate, select]);
 
   return (
-    <>
+    <div className={`p3r-screen${mounted ? " mounted" : ""}`} style={{ "--w": `${optWidth}px`, "--k": optWidth / 950 }}>
+      <video className="p3r-bg" src={menuBg} autoPlay loop muted playsInline />
+
+      <div className="p3r-index" aria-hidden="true">0{active + 1}</div>
+
+      <nav className="p3r-options" aria-label="Main menu">
+        {ITEMS.map((item, i) => (
+          <MenuOption
+            key={item.id}
+            item={item}
+            index={i}
+            isSelected={active === i}
+            onSelect={() => select(i)}
+            onConfirm={() => onNavigate?.(item.page)}
+          />
+        ))}
+      </nav>
+
+      <div className="p3r-hud">
+        <p className="p3r-desc" key={active}>{ITEMS[active].description}</p>
+        <div className="p3r-command">
+          <span>Ahmed's Persona</span>
+          <hr />
+        </div>
+        <div className="p3r-controls">
+          <span className="p3r-control"><i className="p3r-key">↵</i><span>Confirm</span></span>
+          <span className="p3r-control"><i className="p3r-key">esc</i><span>Close</span></span>
+        </div>
+      </div>
+
       <style>{`
-        .p3-overlay {
+        .p3r-screen {
           position: absolute;
           inset: 0;
-          z-index: 10;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          pointer-events: none;
+          overflow: hidden;
+          background: #015FCC;
+          color: #fff;
+          font-family: 'Rodin Pro', 'Bebas Neue', sans-serif;
         }
-
-        .p3-stripe  { position:absolute; right:0; top:0; bottom:0; width:5px; background:#c4001a; z-index:10; pointer-events:none; }
-        .p3-stripe2 { position:absolute; right:9px; top:0; bottom:0; width:2px; background:rgba(245,122,139,0.22); z-index:10; pointer-events:none; }
-
-        .p3-menu {
-          position: relative;
-          z-index: 20;
-          padding: clamp(12px, 4vw, 48px);
-          max-width: 100vw;
-          display: flex;
-          flex-direction: column;
-          align-items: center;
-          pointer-events: all;
-        }
-
-        .p3-row {
-          position: relative;
-          cursor: pointer;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          line-height: 1;
-          text-decoration: none;
-          opacity: 0;
-          transform: translateX(36px);
-          transition: opacity 0.38s ease, transform 0.38s cubic-bezier(0.22,1,0.36,1);
-        }
-        .p3-row.mounted {
-          opacity: 1 !important;
-          transform: translateX(0) !important;
-        }
-
-        .p3-glow {
+        .p3r-bg {
           position: absolute;
-          top: 50%; left: 50%;
-          transform: translate(-50%, -50%);
-          width: 120%; height: 200%;
-          background: radial-gradient(ellipse at center, rgba(255,100,180,0.35) 0%, transparent 70%);
-          filter: blur(18px);
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          object-position: left center;
           z-index: 0;
-          pointer-events: none;
-          opacity: 0;
-          transition: opacity 0.3s ease;
-        }
-        .p3-row.active .p3-glow { opacity: 1; }
-
-        .p3-skew-wrap {
-          position: relative;
-          display: flex;
-          align-items: center;
-          isolation: isolate;
         }
 
-        @keyframes p3-shadow-pop {
-          0%   { transform: translateY(-40%) translateX(-12px) scaleX(0) scaleY(1); }
-          55%  { transform: translateY(-46%) translateX(-15px) scaleX(1.22) scaleY(1.18); }
-          75%  { transform: translateY(-39%) translateX(-11px) scaleX(0.96) scaleY(0.97); }
-          100% { transform: translateY(-40%) translateX(-12px) scaleX(1) scaleY(1); }
-        }
-
-        .p3-shadow-tri {
+        /* Giant faded index number on the left */
+        .p3r-index {
           position: absolute;
-          top: 50%;
-          transform-origin: left center;
-          background: rgba(235, 80, 120, 0.85);
+          left: -4.5rem;
+          top: -18rem;
           z-index: 1;
-          pointer-events: none;
-          transform: translateY(-40%) translateX(-12px) scaleX(0);
-          transition: transform 0.18s ease;
-        }
-        .p3-shadow-tri.pop {
-          animation: p3-shadow-pop 0.28s cubic-bezier(0.34, 1.56, 0.64, 1) forwards;
-        }
-
-        .p3-highlight {
-          position: absolute;
-          top: 50%;
-          transform-origin: left center;
-          background: #ffffff;
-          z-index: 2;
-          transition: transform 0.22s cubic-bezier(0.22,1,0.36,1);
-          pointer-events: none;
-        }
-
-        .p3-label-wrap {
-          position: relative;
-          z-index: 3;
-        }
-
-        .p3-label-base {
-          font-family: 'Anton', sans-serif;
+          font-family: 'Rodin Pro', sans-serif;
           font-style: italic;
-          letter-spacing: 2px;
-          line-height: 0.85;
-          display: block;
-          white-space: nowrap;
-          user-select: none;
-        }
-
-        .p3-label-dark {
-          color: #3ce2ff;
-          transition: color 0.12s ease;
-        }
-        .p3-row.active .p3-label-dark { color: #6b0010; }
-        .p3-row:hover:not(.active) .p3-label-dark { color: #00d9ff; }
-
-        .p3-label-bright {
-          color: #ff2a2a;
-          position: absolute;
-          inset: 0;
-          z-index: 1;
-          opacity: 0;
-          transition: opacity 0.12s ease;
-        }
-        .p3-row.active .p3-label-bright { opacity: 1; }
-
-        .p3-hint {
-          position: absolute;
-          bottom: 24px; right: 28px;
-          z-index: 20;
-          display: flex; flex-direction: column;
-          align-items: flex-end; gap: 5px;
-          font-family: 'Anton', sans-serif;
-          opacity: 0;
-          transition: opacity 0.5s ease 0.9s;
-        }
-        .p3-hint.mounted { opacity: 1; }
-        .p3-hint-row {
-          display: flex; align-items: center; gap: 8px;
-          font-size: 13px; letter-spacing: 2px;
-          color: rgba(255,255,255,0.28);
-        }
-        .p3-hint-key {
-          border: 1px solid rgba(255,255,255,0.2);
-          border-radius: 3px;
-          padding: 1px 6px; font-size: 11px;
-        }
-
-        .p3-name-tag {
-          position: absolute;
-          top: 18px;
-          left: 22px;
-          z-index: 20;
-          font-family: 'Anton', sans-serif;
-          font-style: italic;
-          font-size: clamp(44px, 9vw, 108px);
-          line-height: 0.88;
-          letter-spacing: 2px;
-          color: rgba(10, 10, 14, 0.64);
-          transform: rotate(18deg);
-          transform-origin: left top;
+          font-size: 37vh;
+          letter-spacing: -0.2em;
+          color: #808080;
+          transform: rotate(90deg);
+          transform-origin: center;
+          line-height: 1;
           user-select: none;
           pointer-events: none;
+          opacity: 0;
+          transition: opacity 0.5s ease 0.2s;
+        }
+        .p3r-screen.mounted .p3r-index { opacity: 1; }
+
+        /* Options column */
+        .p3r-options {
+          position: absolute;
+          top: 0;
+          bottom: 0;
+          left: 40vw;
           display: flex;
           flex-direction: column;
           align-items: flex-start;
+          justify-content: center;
+          width: var(--w);
+          z-index: 2;
         }
-        .p3-name-tag span:first-child {
-          color: rgba(0, 0, 0, 0.86);
+        .p3r-opt {
+          position: relative;
+          width: var(--w);
+          opacity: 0;
+          transform: translateX(40px);
+          transition: opacity 0.4s ease, transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
         }
-        .p3-row { -webkit-tap-highlight-color: transparent; }
+        .p3r-opt + .p3r-opt { margin-top: calc(-128px * var(--k)); }
+        .p3r-screen.mounted .p3r-opt { opacity: 1; transform: translateX(0); }
+        .p3r-opt:nth-child(1) { transition-delay: 0.05s; }
+        .p3r-opt:nth-child(2) { transition-delay: 0.12s; }
+        .p3r-opt:nth-child(3) { transition-delay: 0.19s; }
+        .p3r-opt:nth-child(4) { transition-delay: 0.26s; }
+        .p3r-opt-hit {
+          position: absolute;
+          left: 0;
+          top: 50%;
+          width: 100%;
+          height: calc(64px * var(--k));
+          transform: translateY(-50%);
+          background: none;
+          border: 0;
+          padding: 0;
+          cursor: pointer;
+          z-index: 2;
+          -webkit-tap-highlight-color: transparent;
+        }
+        .p3r-opt-hit:focus-visible { outline: 3px solid #fff; outline-offset: -3px; }
+        .p3r-opt-svg {
+          display: block;
+          width: 100%;
+          height: auto;
+          overflow: visible;
+          pointer-events: none;
+          transform: translate(calc(var(--ox) * var(--k) * 1px), calc(var(--oy) * var(--k) * 1px)) rotate(var(--rot));
+          transform-origin: 25% center;
+        }
+        .p3r-text {
+          font-family: 'Rodin Pro', 'Bebas Neue', sans-serif;
+          font-weight: 800;
+          font-style: italic;
+          font-size: 72px;
+          letter-spacing: -0.14em;
+          transform-origin: 237px 100px;
+          transform-box: view-box;
+        }
+        .p3r-opt.selected .p3r-text { animation: p3r-pulse 0.22s cubic-bezier(0.34, 1.56, 0.64, 1); }
+        @keyframes p3r-pulse {
+          0%   { transform: scale(1); }
+          50%  { transform: scale(1.5); }
+          100% { transform: scale(1); }
+        }
+        .p3r-selector { transform-origin: left center; transform-box: view-box; }
+        .p3r-tri-pink { fill: #FD77D9; }
+        .p3r-tri-blink {
+          transform-origin: 52px 100px;
+          transform-box: view-box;
+          animation: p3r-blink 0.75s linear infinite;
+        }
+        @keyframes p3r-blink {
+          0%, 80%  { transform: scale(1); }
+          93%      { transform: scale(1.05); }
+          100%     { transform: scale(1); }
+        }
+
+        /* Bottom-right HUD */
+        .p3r-hud {
+          position: absolute;
+          right: 0;
+          bottom: 0;
+          z-index: 3;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          font-family: 'NewRodin Pro', sans-serif;
+          --shadow-under: 0 1px 6px rgba(0,0,0,0.5), 0 -1px 6px rgba(0,0,0,0.5), 1px 0 6px rgba(0,0,0,0.5), -1px 0 6px rgba(0,0,0,0.5);
+          opacity: 0;
+          transition: opacity 0.5s ease 0.35s;
+        }
+        .p3r-screen.mounted .p3r-hud { opacity: 1; }
+        .p3r-desc {
+          font-style: italic;
+          font-size: 30px;
+          padding-right: 80px;
+          text-shadow: var(--shadow-under);
+          animation: p3r-desc-in 0.25s ease-out;
+        }
+        @keyframes p3r-desc-in {
+          from { opacity: 0; transform: translateX(10px); }
+          to   { opacity: 1; transform: translateX(0); }
+        }
+        .p3r-command {
+          display: flex;
+          align-items: center;
+          gap: 4px;
+          width: 100%;
+          font-size: 16px;
+          text-shadow: var(--shadow-under);
+        }
+        .p3r-command hr {
+          flex: 1;
+          border: 0;
+          border-top: 2px solid #fff;
+          margin: 0;
+          box-shadow: var(--shadow-under);
+        }
+        .p3r-controls {
+          display: flex;
+          align-items: center;
+          justify-content: flex-end;
+          gap: 16px;
+          width: 100%;
+          padding-right: 80px;
+          margin: 16px 0 24px;
+        }
+        .p3r-control {
+          display: inline-flex;
+          align-items: center;
+          gap: 4px;
+          font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+          font-style: italic;
+          font-size: 30px;
+          letter-spacing: -0.02em;
+          text-shadow:
+            0 2px 0 #5D6A88, 0 -2px 0 #5D6A88, 2px 0 0 #5D6A88, -2px 0 0 #5D6A88,
+            -2px -2px 0 #5D6A88, 2px -2px 0 #5D6A88, 2px 2px 0 #5D6A88, -2px 2px 0 #5D6A88,
+            var(--shadow-under);
+        }
+        .p3r-key {
+          display: inline-grid;
+          place-items: center;
+          min-width: 32px;
+          height: 32px;
+          padding: 0 6px;
+          border-radius: 999px;
+          background: rgba(3, 31, 100, 0.8);
+          border: 3px solid #fff;
+          outline: 3px solid #5D6A88;
+          box-shadow: var(--shadow-under);
+          font-family: system-ui, -apple-system, 'Segoe UI', sans-serif;
+          font-style: normal;
+          font-weight: 700;
+          font-size: 16px;
+          text-transform: uppercase;
+          text-shadow: none;
+        }
+
+        @media (max-width: 1100px) {
+          .p3r-options { left: 24vw; }
+        }
         @media (max-width: 720px) {
-          .p3-name-tag { top: 10px; left: 12px; opacity: 0.85; }
-          .p3-stripe { width: 3px; }
+          .p3r-options { left: -3vw; justify-content: center; padding-bottom: 18vh; }
+          .p3r-index { font-size: 26vh; left: -3rem; top: -12rem; }
+          .p3r-desc { font-size: 20px; padding-right: 20px; }
+          .p3r-command { font-size: 13px; }
+          .p3r-controls { padding-right: 20px; gap: 12px; margin: 10px 0 14px; }
+          .p3r-control { font-size: 18px; }
+          .p3r-key { min-width: 26px; height: 26px; font-size: 12px; border-width: 2px; outline-width: 2px; }
         }
         @media (max-height: 520px) {
-          .p3-name-tag { font-size: 40px; }
+          .p3r-index { font-size: 30vh; }
+          .p3r-desc { font-size: 20px; }
+          .p3r-control { font-size: 18px; }
+          .p3r-key { min-width: 26px; height: 26px; font-size: 12px; }
+          .p3r-controls { margin: 8px 0 10px; }
+        }
+        @media (prefers-reduced-motion: reduce) {
+          .p3r-opt.selected .p3r-text, .p3r-tri-blink, .p3r-desc { animation: none; }
+          .p3r-opt, .p3r-index, .p3r-hud { transition: none; }
         }
       `}</style>
-
-      <div className="p3-overlay">
-        <div className="p3-name-tag">
-          <span>Ahmed's</span>
-          <span>Persona</span>
-        </div>
-        <div className="p3-stripe" />
-        <div className="p3-stripe2" />
-
-        <nav className="p3-menu">
-          {ITEMS.map((item, i) => {
-            const isActive = active === i;
-            const dist = Math.abs(i - active);
-            const opacity = isActive ? 1 : Math.max(0.5, 1 - dist * 0.2);
-            const fontSize = Math.round(item.fontSize * scale);
-            const estW = item.label.length * fontSize * 0.6 + 80 * scale;
-            const estH = fontSize * 0.94;
-            const clipFn = CLIP_SHAPES[i] ?? CLIP_SHAPES[0];
-
-            return (
-              <a
-                key={item.id}
-                href="#"
-                className={`p3-row ${isActive ? "active" : ""} ${mounted ? "mounted" : ""}`}
-                style={{
-                  marginRight: item.offsetX * scale,
-                  marginTop: item.offsetY * scale,
-                  transitionDelay: mounted ? `${i * 80}ms` : "0ms",
-                }}
-                onClick={(e) => { e.preventDefault(); onNavigate?.(item.page); }}
-                onMouseEnter={() => activate(i)}
-                aria-current={isActive ? "page" : undefined}
-              >
-                <div className="p3-glow" />
-                <div
-                  className="p3-skew-wrap"
-                  style={{ transform: `skewX(${item.skew}deg) skewY(${item.skewY}deg)` }}
-                >
-                  <div
-                    key={isActive ? `pop-${i}-${animKey}` : `idle-${i}`}
-                    className={`p3-shadow-tri${isActive ? ' pop' : ''}`}
-                    style={{
-                      width: estW,
-                      height: estH,
-                      clipPath: clipFn(estW, estH),
-                    }}
-                  />
-                  <div
-                    className="p3-highlight"
-                    style={{
-                      width: estW,
-                      height: estH,
-                      clipPath: clipFn(estW, estH),
-                      transform: `translateY(-50%) scaleX(${isActive ? 1 : 0})`,
-                    }}
-                  />
-                  <div className="p3-label-wrap" style={{ opacity }}>
-                    <span className="p3-label-base p3-label-dark" style={{ fontSize }}>
-                      {item.label}
-                    </span>
-                    <span
-                      className="p3-label-base p3-label-bright"
-                      style={{
-                        fontSize,
-                        clipPath: clipFn(estW, estH),
-                      }}
-                    >
-                      {item.label}
-                    </span>
-                  </div>
-                </div>
-              </a>
-            );
-          })}
-        </nav>
-
-        <div className={`p3-hint ${mounted ? "mounted" : ""}`}>
-          <div className="p3-hint-row"><span className="p3-hint-key">↑↓</span><span>NAVIGATE</span></div>
-          <div className="p3-hint-row"><span className="p3-hint-key">↵</span><span>CONFIRM</span></div>
-        </div>
-      </div>
-    </>
+    </div>
   );
 }

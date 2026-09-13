@@ -1,3 +1,22 @@
+@font-face {
+  font-family: "NewRodin Pro";
+  src: url("/fonts/NewRodinPro-DB.woff2") format("woff2");
+  font-weight: 300 600;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Rodin Pro";
+  src: url("/fonts/RodinPro-EB.woff2") format("woff2");
+  font-weight: 700;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Rodin Pro";
+  src: url("/fonts/RodinPro-UB.woff2") format("woff2");
+  font-weight: 800 900;
+  font-display: swap;
+}
+
 :root {
   --p3-bg-panel: linear-gradient(180deg, rgba(15, 28, 105, 0.96) 0%, rgba(8, 16, 68, 0.97) 100%);
   --p3-bg-dark: #000000;
@@ -24,6 +43,7 @@ html, body, #root {
 body {
   background: var(--p3-bg-dark);
   color: var(--p3-text-on-dark);
+  font-family: "NewRodin Pro", "Montserrat", system-ui, sans-serif;
   overflow: hidden;
   -webkit-text-size-adjust: 100%;
   -webkit-tap-highlight-color: transparent;
