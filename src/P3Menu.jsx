@@ -1,12 +1,12 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import menuBg from "./assets/menu-bg.mp4";
 
 // Main menu in the style of the Persona 3 Reload pause menu.
 const ITEMS = [
-  { id: "about",   label: "ABOUT ME",       page: "about",   description: "View profile",        rotation: -15, zIndex: 0, offsetX: 0,   offsetY: 30 },
-  { id: "resume",  label: "FUTURE PERSONA", page: "resume",  description: "View future plans",   rotation: -20, zIndex: 1, offsetX: -50, offsetY: 35 },
+  { id: "about",   label: "ABOUT ME",       page: "about",   description: "View Profile",        rotation: -15, zIndex: 0, offsetX: 0,   offsetY: 30 },
+  { id: "resume",  label: "FUTURE PERSONA", page: "resume",  description: "View Future Flans",   rotation: -20, zIndex: 1, offsetX: -50, offsetY: 35 },
   { id: "socials", label: "SOCIALS",        page: "socials", description: "View Social Links",   rotation: -8,  zIndex: 2, offsetX: -20, offsetY: 20 },
-  { id: "music",   label: "MUSIC",          page: "music",   description: "Play the soundtrack", rotation: 8,   zIndex: 0, offsetX: 0,   offsetY: 0 },
+  { id: "music",   label: "MUSIC",          page: "music",   description: "Play the Soundtrack", rotation: 8,   zIndex: 0, offsetX: 0,   offsetY: 0 },
 ];
 
 const COLORS = ["#16CFFB", "#7DE6FD", "#77FEFC"];
@@ -14,8 +14,37 @@ const SELECTOR_PATH = "M 24.853754,93.31573 135.14625,49.684266 114.14751,97.331
 const SELECTOR_BG_PATH = "M 12.7428765,95.50088 144.25712,47.499123 116.75625,95.465764 Z";
 const NAV_SOUND = "/sfx/navigation.wav";
 
+const isTouch = () => window.matchMedia("(hover: none) and (pointer: coarse)").matches;
+
 function MenuOption({ item, index, isSelected, onSelect, onConfirm }) {
   const maskId = `p3r-mask-${item.id}`;
+  const textRef = useRef(null);
+  const [hit, setHit] = useState(null);
+
+  // Measure the label once the font is in, so the hit area hugs the glyphs (with padding).
+  useLayoutEffect(() => {
+    const measure = () => {
+      const t = textRef.current;
+      if (!t) return;
+      try {
+        const b = t.getBBox();
+        setHit({ x: b.x, y: b.y, w: b.width, h: b.height });
+      } catch { /* not rendered yet */ }
+    };
+    measure();
+    document.fonts?.ready.then(measure);
+  }, [item.label]);
+
+  // The highlighted label keeps a tight zone; the others get a generous one, so
+  // sliding onto a neighbour switches promptly instead of sticking.
+  const pad = isSelected ? 2 : 22;
+  const padY = isSelected ? 2 : 12;
+
+  const handleClick = () => {
+    // On touch screens the first tap highlights, the second opens.
+    if (isTouch() && !isSelected) { onSelect(); return; }
+    onConfirm();
+  };
   const stretch = item.label.replaceAll(" ", "").length * 0.5 + 1.5;
   const selectorTransform = `translate(-60, -10) rotate(8, 0, 100) scale(${stretch}, 3)`;
   const color = COLORS[(index + 2) % COLORS.length];
@@ -25,7 +54,6 @@ function MenuOption({ item, index, isSelected, onSelect, onConfirm }) {
       <button
         type="button"
         className="p3r-opt-hit"
-        onMouseEnter={onSelect}
         onFocus={onSelect}
         onClick={onConfirm}
         aria-label={`${item.label}: ${item.description}`}
@@ -54,7 +82,7 @@ function MenuOption({ item, index, isSelected, onSelect, onConfirm }) {
           </g>
         )}
 
-        <text x="150" y="120" className="p3r-text" fill={isSelected ? "#000" : color}>
+        <text ref={textRef} x="150" y="120" className="p3r-text" fill={isSelected ? "#000" : color}>
           {item.label}
         </text>
 
@@ -62,6 +90,17 @@ function MenuOption({ item, index, isSelected, onSelect, onConfirm }) {
           <g mask={`url(#${maskId})`}>
             <text x="150" y="120" className="p3r-text" fill="#F00">{item.label}</text>
           </g>
+        )}
+
+        {hit && (
+          <rect
+            className="p3r-hit-rect"
+            x={hit.x - pad} y={hit.y - padY} width={hit.w + pad * 2} height={hit.h + padY * 2}
+            fill="transparent"
+            onMouseEnter={onSelect}
+            onPointerDown={(e) => { if (e.pointerType === "touch") onSelect(); }}
+            onClick={handleClick}
+          />
         )}
       </svg>
     </div>
@@ -123,6 +162,8 @@ export default function P3Menu({ onNavigate }) {
 
       <div className="p3r-index" aria-hidden="true">0{active + 1}</div>
 
+      <h1 className="p3r-title">Ahmed's Persona</h1>
+
       <nav className="p3r-options" aria-label="Main menu">
         {ITEMS.map((item, i) => (
           <MenuOption
@@ -139,7 +180,7 @@ export default function P3Menu({ onNavigate }) {
       <div className="p3r-hud">
         <p className="p3r-desc" key={active}>{ITEMS[active].description}</p>
         <div className="p3r-command">
-          <span>Ahmed's Persona</span>
+          <span>Command</span>
           <hr />
         </div>
         <div className="p3r-controls">
@@ -188,6 +229,32 @@ export default function P3Menu({ onNavigate }) {
         }
         .p3r-screen.mounted .p3r-index { opacity: 1; }
 
+        /* Title, top-left */
+        .p3r-title {
+          position: absolute;
+          top: calc(28px + env(safe-area-inset-top, 0px));
+          left: calc(28px + env(safe-area-inset-left, 0px));
+          z-index: 4;
+          margin: 0;
+          padding: 10px 22px 8px 18px;
+          background: #fff;
+          color: #015FCC;
+          border-radius: 6px;
+          font-family: 'Rodin Pro', sans-serif;
+          font-weight: 800;
+          font-style: italic;
+          font-size: clamp(26px, 3.2vw, 46px);
+          letter-spacing: -0.06em;
+          line-height: 1;
+          white-space: nowrap;
+          transform: rotate(-3deg);
+          transform-origin: left center;
+          box-shadow: 4px 6px 0 rgba(3, 31, 100, 0.55);
+          opacity: 0;
+          transition: opacity 0.4s ease 0.1s, transform 0.4s cubic-bezier(0.22, 1, 0.36, 1) 0.1s;
+        }
+        .p3r-screen.mounted .p3r-title { opacity: 1; }
+
         /* Options column */
         .p3r-options {
           position: absolute;
@@ -204,11 +271,12 @@ export default function P3Menu({ onNavigate }) {
         .p3r-opt {
           position: relative;
           width: var(--w);
+          pointer-events: none;
           opacity: 0;
           transform: translateX(40px);
           transition: opacity 0.4s ease, transform 0.45s cubic-bezier(0.22, 1, 0.36, 1);
         }
-        .p3r-opt + .p3r-opt { margin-top: calc(-128px * var(--k)); }
+        .p3r-opt + .p3r-opt { margin-top: calc(-112px * var(--k)); }
         .p3r-screen.mounted .p3r-opt { opacity: 1; transform: translateX(0); }
         .p3r-opt:nth-child(1) { transition-delay: 0.05s; }
         .p3r-opt:nth-child(2) { transition-delay: 0.12s; }
@@ -224,10 +292,11 @@ export default function P3Menu({ onNavigate }) {
           background: none;
           border: 0;
           padding: 0;
-          cursor: pointer;
+          pointer-events: none;
           z-index: 2;
-          -webkit-tap-highlight-color: transparent;
         }
+        .p3r-hit-rect { pointer-events: all; cursor: pointer; }
+        .p3r-opt.selected { z-index: 6 !important; }
         .p3r-opt-hit:focus-visible { outline: 3px solid #fff; outline-offset: -3px; }
         .p3r-opt-svg {
           display: block;
@@ -235,6 +304,8 @@ export default function P3Menu({ onNavigate }) {
           height: auto;
           overflow: visible;
           pointer-events: none;
+          position: relative;
+          z-index: 1;
           transform: translate(calc(var(--ox) * var(--k) * 1px), calc(var(--oy) * var(--k) * 1px)) rotate(var(--rot));
           transform-origin: 25% center;
         }
@@ -354,6 +425,7 @@ export default function P3Menu({ onNavigate }) {
         @media (max-width: 720px) {
           .p3r-options { left: -3vw; justify-content: center; padding-bottom: 18vh; }
           .p3r-index { font-size: 26vh; left: -3rem; top: -12rem; }
+          .p3r-title { top: calc(18px + env(safe-area-inset-top, 0px)); left: 16px; font-size: 24px; padding: 8px 14px 6px 12px; }
           .p3r-desc { font-size: 20px; padding-right: 20px; }
           .p3r-command { font-size: 13px; }
           .p3r-controls { padding-right: 20px; gap: 12px; margin: 10px 0 14px; }
@@ -362,6 +434,7 @@ export default function P3Menu({ onNavigate }) {
         }
         @media (max-height: 520px) {
           .p3r-index { font-size: 30vh; }
+          .p3r-title { top: 12px; left: 14px; font-size: 22px; padding: 6px 12px 5px 10px; }
           .p3r-desc { font-size: 20px; }
           .p3r-control { font-size: 18px; }
           .p3r-key { min-width: 26px; height: 26px; font-size: 12px; }
