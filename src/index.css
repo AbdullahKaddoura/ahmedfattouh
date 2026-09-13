@@ -25,4 +25,25 @@ body {
   background: var(--p3-bg-dark);
   color: var(--p3-text-on-dark);
   overflow: hidden;
+  -webkit-text-size-adjust: 100%;
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+  overscroll-behavior: none;
+  -webkit-font-smoothing: antialiased;
 }
+
+/* Safe areas on notched phones: keep fixed corner controls clear of the notch and home bar. */
+.am-back-control, .sc-back-button, .mu-back, .fp-hint {
+  bottom: calc(22px + env(safe-area-inset-bottom, 0px)) !important;
+  left: calc(24px + env(safe-area-inset-left, 0px)) !important;
+}
+.am-footer, .sc-footer, .mu-footer, .p3-hint, .fp-readout {
+  bottom: calc(20px + env(safe-area-inset-bottom, 0px)) !important;
+  right: calc(28px + env(safe-area-inset-right, 0px)) !important;
+}
+
+/* Keyboard hints mean nothing on touch screens. */
+@media (hover: none) and (pointer: coarse) {
+  .am-footer, .sc-footer, .mu-footer, .p3-hint, .fp-hint .fp-hint-keys { display: none !important; }
+}
+

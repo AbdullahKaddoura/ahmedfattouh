@@ -974,6 +974,43 @@ export default function AboutMe() {
           .am-favorites-content .am-reveal-upper-line { font-size: 16px; }
           .am-right-nav .am-nav-btn { font-size: 40px; }
         }
+        @media (max-width: 720px) {
+          .am-tab-button { min-height: 40px; }
+          .am-favorites-content .am-reveal-upper-line { min-height: 44px; }
+          .am-right-nav .am-nav-arrow { padding: 8px 10px; font-size: 24px; }
+        }
+        /* Phones held sideways: very little height, so compress the panel and let it scroll. */
+        @media (max-height: 520px) {
+          .am-right-nav { display: none; }
+          .am-reveal-frame { top: 50%; left: 2vw; width: 64vw; max-height: 92vh; }
+          .am-reveal-panel { min-height: 0; max-height: 92vh; padding: 10px 40px 10px 14px; gap: 8px; }
+          .am-reveal-head { flex-direction: row; align-items: center; padding-bottom: 6px; gap: 10px; }
+          .am-reveal-eyebrow { display: none; }
+          .am-reveal-title { font-size: 26px; letter-spacing: 2px; }
+          .am-tab-button { font-size: 11px; padding: 4px 8px; min-height: 30px; gap: 4px; }
+          .am-reveal-upper-bar { min-height: 0; padding: 10px 16px; gap: 8px; }
+          .am-bio-content { padding-top: 10px; padding-bottom: 10px; }
+          .am-bio-content .am-reveal-upper-line { font-size: 13px; line-height: 1.4; }
+          .am-bio-content .am-reveal-upper-line:first-child { font-size: 14px; }
+          .am-favorites-content { padding: 8px 14px; }
+          .am-gallery { grid-template-columns: minmax(0, 1fr) 96px; gap: 10px; }
+          .am-reveal-list { grid-template-columns: 1fr; }
+          .am-favorites-content .am-reveal-upper-line { font-size: 14px; padding: 4px 6px; gap: 6px; }
+          .am-reveal-thumb { width: 22px; height: 30px; }
+          .am-reveal-meta { display: none; }
+          .am-spotlight { width: 96px; gap: 4px; }
+          .am-spotlight-caption { display: none; }
+          .am-reveal-lower-bar { min-height: 40px; font-size: 15px; padding: 4px 12px; }
+          .am-reveal-lower-icon { width: 30px; height: 30px; }
+          .am-reveal-lower-icon > svg { width: 16px; height: 16px; }
+          .am-main-portrait-shell { right: -14vw; width: 44vw; }
+          .am-bar { height: 48px; }
+          .am-bar-outer.active .am-bar, .am-bar-outer.active .am-bar-red { height: 60px; }
+          .am-root { gap: 4px; }
+          .am-role { font-size: 28px; }
+          .am-label { font-size: 20px; letter-spacing: 2px; }
+          .am-char { max-width: 100px; }
+        }
         @media (prefers-reduced-motion: reduce) {
           .am-reveal-stage.mounted .am-reveal-panel,
           .am-reveal-stage.mounted .am-reveal-backplate,

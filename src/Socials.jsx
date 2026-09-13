@@ -482,27 +482,35 @@ export default function Socials() {
           outline: none;
         }
 
+        /* Phones in portrait: party bars in the upper half, detail rows stacked underneath. */
         @media (max-width: 720px) {
-          .sc-root { gap: 10px; }
+          .sc-root { gap: 10px; justify-content: flex-start; padding-top: 16vh; }
           .sc-bar,
           .sc-bar-red {
-            width: 86vw;
-            height: 70px;
+            width: 92vw;
+            height: 64px;
           }
           .sc-bar-outer.active .sc-bar,
-          .sc-bar-outer.active .sc-bar-red { height: 96px; }
-          .sc-role { font-size: clamp(1.7rem, 8vw, 3rem); }
+          .sc-bar-outer.active .sc-bar-red { height: 84px; }
+          .sc-role { font-size: clamp(1.5rem, 7vw, 2.4rem); }
           .sc-label {
-            font-size: clamp(1.65rem, 7vw, 2.5rem);
+            font-size: clamp(1.4rem, 6vw, 2.1rem);
             letter-spacing: 3px;
           }
           .sc-main-top { padding-right: 24px !important; }
           .sc-char {
-            left: 78px;
-            max-width: 115px;
+            left: 72px;
+            max-width: 100px;
           }
+          .sc-right-nav { top: calc(14px + env(safe-area-inset-top, 0px)); right: auto; left: 4vw; gap: 4px; }
+          .sc-right-nav .sc-nav-btn { font-size: 44px; padding: 0 4px; }
+          .sc-right-nav .sc-nav-label { font-size: 16px; letter-spacing: 2px; }
+          .sc-right-nav .sc-nav-arrow { font-size: 16px; }
           .sc-info-bar-wrap {
-            left: 34%;
+            top: auto !important;
+            bottom: calc(15vh + env(safe-area-inset-bottom, 0px) + (1 - var(--i, 0)) * 66px);
+            left: 4vw;
+            right: 4vw;
             height: 58px;
           }
           .sc-info-bar-text { font-size: 1.1rem; }
@@ -510,6 +518,28 @@ export default function Socials() {
             font-size: 1.35rem;
             margin-right: 12px;
           }
+        }
+        /* Phones sideways: bars on the left, details on the right, everything shorter. */
+        @media (max-height: 520px) and (min-width: 721px) {
+          .sc-root { gap: 6px; }
+          .sc-bar, .sc-bar-red { width: 50vw; height: 54px; }
+          .sc-bar-outer.active .sc-bar, .sc-bar-outer.active .sc-bar-red { height: 66px; }
+          .sc-role { font-size: 1.8rem; }
+          .sc-label { font-size: 1.5rem; letter-spacing: 3px; }
+          .sc-main-top { padding-right: 40px !important; }
+          .sc-char { left: 70px; max-width: 90px; }
+          .sc-right-nav { top: 8px; right: 12px; }
+          .sc-right-nav .sc-nav-btn { font-size: 40px; }
+          .sc-right-nav .sc-nav-label { font-size: 16px; }
+          .sc-info-bar-wrap {
+            top: calc(26vh + var(--i, 0) * 58px) !important;
+            left: 54%;
+            right: 2vw;
+            height: 50px;
+          }
+          .sc-info-bar-text { font-size: 1.1rem; }
+          .sc-info-bar-count { font-size: 1.3rem; margin-right: 12px; }
+          .sc-back-button { padding: 6px 12px; font-size: 16px; }
         }
       `}</style>
 
@@ -557,7 +587,7 @@ export default function Socials() {
         <div
           className={`sc-info-bar-wrap${activeInfoBar === i ? " selected" : ""}`}
           key={`bar-${active}-${i}`}
-          style={{ top: `${155 + i * 82}px`, animationDelay: `${i * 50}ms` }}
+          style={{ top: `${155 + i * 82}px`, animationDelay: `${i * 50}ms`, "--i": i }}
           onClick={() => setActiveInfoBar(i)}
           onMouseEnter={() => setActiveInfoBar(i)}
         >

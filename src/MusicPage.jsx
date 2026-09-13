@@ -648,11 +648,34 @@ export default function MusicPage() {
           .mu-track.current .mu-track-btn { height: 60px; }
           .mu-track-title { font-size: 20px; letter-spacing: 2px; }
           .mu-track-len { display: none; }
-          .mu-stage { top: auto; bottom: 10vh; transform: none; left: 2vw; right: 2vw; width: auto; }
+          .mu-stage { top: auto; bottom: calc(10vh + env(safe-area-inset-bottom, 0px)); transform: none; left: 2vw; right: 2vw; width: auto; }
+          .mu-track-btn { min-height: 48px; }
           .mu-panel { padding: 16px 44px 16px 16px; gap: 12px; }
           .mu-disc { display: none; }
           .mu-viz { height: 48px; }
           .mu-volume { display: none; }
+          .mu-footer { display: none; }
+        }
+        /* Phones sideways: list left, compact player right. */
+        @media (max-height: 520px) and (min-width: 721px) {
+          .mu-head { top: 2vh; left: 3vw; }
+          .mu-head-eyebrow { display: none; }
+          .mu-head-title { font-size: 40px; }
+          .mu-list { top: 17vh; max-height: 66vh; width: 46vw; gap: 4px; }
+          .mu-track-btn { height: 44px; padding: 0 22px 0 16px; gap: 10px; }
+          .mu-track.current .mu-track-btn { height: 52px; }
+          .mu-track-num { font-size: 20px; min-width: 26px; }
+          .mu-track-title { font-size: 18px; letter-spacing: 2px; }
+          .mu-track-len { font-size: 14px; }
+          .mu-stage { width: 48vw; right: 2vw; }
+          .mu-panel { padding: 12px 44px 12px 16px; gap: 10px; }
+          .mu-disc { display: none; }
+          .mu-now-title { font-size: 26px; }
+          .mu-now-album { display: none; }
+          .mu-viz { height: 40px; }
+          .mu-btn { width: 40px; height: 40px; font-size: 15px; }
+          .mu-btn.primary { width: 52px; height: 46px; font-size: 18px; }
+          .mu-volume input[type="range"] { width: 70px; }
           .mu-footer { display: none; }
         }
         @media (prefers-reduced-motion: reduce) {

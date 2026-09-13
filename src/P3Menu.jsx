@@ -19,6 +19,18 @@ export default function P3Menu({ onNavigate }) {
   const [active, setActive] = useState(0);
   const [mounted, setMounted] = useState(false);
   const [animKey, setAnimKey] = useState(0);
+  const [scale, setScale] = useState(1);
+
+  // The menu was designed in pixels for a desktop screen; scale it down on smaller viewports.
+  useEffect(() => {
+    const measure = () => {
+      const s = Math.min(1, window.innerWidth / 1180, window.innerHeight / 760);
+      setScale(Math.max(0.42, s));
+    };
+    measure();
+    window.addEventListener("resize", measure);
+    return () => window.removeEventListener("resize", measure);
+  }, []);
 
   const activate = (idx) => {
     setActive(idx);
@@ -59,7 +71,8 @@ export default function P3Menu({ onNavigate }) {
         .p3-menu {
           position: relative;
           z-index: 20;
-          padding: 48px;
+          padding: clamp(12px, 4vw, 48px);
+          max-width: 100vw;
           display: flex;
           flex-direction: column;
           align-items: center;
@@ -196,7 +209,7 @@ export default function P3Menu({ onNavigate }) {
           z-index: 20;
           font-family: 'Anton', sans-serif;
           font-style: italic;
-          font-size: 108px;
+          font-size: clamp(44px, 9vw, 108px);
           line-height: 0.88;
           letter-spacing: 2px;
           color: rgba(10, 10, 14, 0.64);
@@ -210,6 +223,14 @@ export default function P3Menu({ onNavigate }) {
         }
         .p3-name-tag span:first-child {
           color: rgba(0, 0, 0, 0.86);
+        }
+        .p3-row { -webkit-tap-highlight-color: transparent; }
+        @media (max-width: 720px) {
+          .p3-name-tag { top: 10px; left: 12px; opacity: 0.85; }
+          .p3-stripe { width: 3px; }
+        }
+        @media (max-height: 520px) {
+          .p3-name-tag { font-size: 40px; }
         }
       `}</style>
 
@@ -226,8 +247,9 @@ export default function P3Menu({ onNavigate }) {
             const isActive = active === i;
             const dist = Math.abs(i - active);
             const opacity = isActive ? 1 : Math.max(0.5, 1 - dist * 0.2);
-            const estW = item.label.length * item.fontSize * 0.6 + 80;
-            const estH = item.fontSize * 0.94;
+            const fontSize = Math.round(item.fontSize * scale);
+            const estW = item.label.length * fontSize * 0.6 + 80 * scale;
+            const estH = fontSize * 0.94;
             const clipFn = CLIP_SHAPES[i] ?? CLIP_SHAPES[0];
 
             return (
@@ -236,8 +258,8 @@ export default function P3Menu({ onNavigate }) {
                 href="#"
                 className={`p3-row ${isActive ? "active" : ""} ${mounted ? "mounted" : ""}`}
                 style={{
-                  marginRight: item.offsetX,
-                  marginTop: item.offsetY,
+                  marginRight: item.offsetX * scale,
+                  marginTop: item.offsetY * scale,
                   transitionDelay: mounted ? `${i * 80}ms` : "0ms",
                 }}
                 onClick={(e) => { e.preventDefault(); onNavigate?.(item.page); }}
@@ -268,13 +290,13 @@ export default function P3Menu({ onNavigate }) {
                     }}
                   />
                   <div className="p3-label-wrap" style={{ opacity }}>
-                    <span className="p3-label-base p3-label-dark" style={{ fontSize: item.fontSize }}>
+                    <span className="p3-label-base p3-label-dark" style={{ fontSize }}>
                       {item.label}
                     </span>
                     <span
                       className="p3-label-base p3-label-bright"
                       style={{
-                        fontSize: item.fontSize,
+                        fontSize,
                         clipPath: clipFn(estW, estH),
                       }}
                     >

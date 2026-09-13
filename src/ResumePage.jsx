@@ -420,12 +420,41 @@ export default function ResumePage() {
         .fp-dot { width: 10px; height: 10px; border-radius: 50%; background: #fff; display: inline-block; }
         .fp-hint-keys { font-size: 13px; letter-spacing: 2px; opacity: 0.55; }
 
+        /* Phones in portrait: the scattered layout can't fit, so the squares stack in a column. */
         @media (max-width: 720px) {
-          .fp-node-face { padding: 10px 18px 8px 16px; }
-          .fp-node-label { font-size: 12px; letter-spacing: 1px; }
+          .fp-nodes {
+            inset: 18vh 6vw 16vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            gap: 14px;
+          }
+          .fp-node { position: static !important; width: 100%; }
+          .fp-node-face { padding: 14px 18px 12px; text-align: center; }
+          .fp-node-label { font-size: 15px; letter-spacing: 2px; }
+          .fp-node-sub { right: 8px; }
+          .fp-node.active .fp-node-face { animation: none; transform: scale(1.03); }
+          .fp-lines { opacity: 0.45; }
+          .fp-command { top: 3vh; }
           .fp-command-title { font-size: 14px; letter-spacing: 2px; }
-          .fp-hint-keys { display: none; }
+          .fp-back { width: 44px; height: 44px; font-size: 36px; }
+          .fp-hint { font-size: 15px; gap: 12px; padding: 5px 12px 4px; }
+          .fp-hint .fp-hint-keys { display: none; }
           .fp-readout-date { font-size: 18px; }
+          .fp-readout-moon { font-size: 12px; letter-spacing: 3px; }
+        }
+        /* Phones sideways: keep the scatter but tighten it. */
+        @media (max-height: 520px) and (min-width: 721px) {
+          .fp-node-face { padding: 8px 20px 6px 16px; }
+          .fp-node-label { font-size: 13px; }
+          .fp-command { top: 3vh; }
+          .fp-command-title { font-size: 14px; }
+          .fp-command-sub { font-size: 11px; }
+          .fp-back { width: 40px; height: 40px; font-size: 32px; }
+          .fp-hint { font-size: 14px; padding: 4px 10px 3px; }
+          .fp-hint .fp-hint-keys { display: none; }
+          .fp-readout-date { font-size: 18px; }
+          .fp-readout-moon { font-size: 12px; }
         }
         @media (prefers-reduced-motion: reduce) {
           .fp-grain, .fp-entry-mask, .fp-node.active .fp-node-face, .fp-node.active .fp-node-ping { animation: none !important; }
