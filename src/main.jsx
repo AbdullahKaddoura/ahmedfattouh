@@ -4,11 +4,14 @@ import { BrowserRouter } from 'react-router-dom'
 import './index.css'
 import App from './App.jsx'
 import { SoundtrackProvider } from './Soundtrack.jsx'
+import { ContentProvider } from './ContentContext.jsx'
 
 createRoot(document.getElementById('root')).render(
   <BrowserRouter>
     <SoundtrackProvider>
-      <App />
+      <ContentProvider>
+        <App />
+      </ContentProvider>
     </SoundtrackProvider>
   </BrowserRouter>
 )

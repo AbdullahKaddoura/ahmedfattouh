@@ -1,16 +1,18 @@
 import { useEffect, useLayoutEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
+import { useContent } from "./useContent.js";
+import EditModal from "./EditModal.jsx";
 
 const BG_VIDEO = new URL("../music/vid1.mp4", import.meta.url).href;
 
-// Placeholder squares. Names, subtitles, and positions are easy to swap once the
-// real content is decided. `x` / `y` are viewport percentages for the box's top-left.
-const NODES = [
-  { id: "education", label: "EDUCATION", jp: "教育", x: 56, y: 14, from: "top" },
-  { id: "skills", label: "SKILLS", jp: "スキル", x: 27, y: 25, from: "left" },
-  { id: "experience", label: "EXPERIENCE", jp: "経験", x: 68, y: 40, from: "right" },
-  { id: "ambitions", label: "AMBITIONS", jp: "野望", x: 24, y: 52, from: "left" },
-  { id: "timeline", label: "TIMELINE", jp: "年表", x: 50, y: 70, from: "bottom" },
+// Square positions. Names, subtitles, and text come from the editable content store.
+// `x` / `y` are viewport percentages for the box's top-left.
+const LAYOUT = [
+  { id: "education", x: 56, y: 14, from: "top" },
+  { id: "skills", x: 27, y: 25, from: "left" },
+  { id: "experience", x: 68, y: 40, from: "right" },
+  { id: "ambitions", x: 24, y: 52, from: "left" },
+  { id: "timeline", x: 50, y: 70, from: "bottom" },
 ];
 
 // Two guide lines echoing the reference: a white one from top-left toward the
@@ -20,17 +22,6 @@ const LINES = [
   { id: "black", x1: 12, y1: 95, x2: 72, y2: 42, stroke: "#05070c", width: 1.5, delay: 0.3 },
 ];
 
-function moonPhaseLabel(date) {
-  const synodic = 29.530588853;
-  const known = Date.UTC(2000, 0, 6, 18, 14); // reference new moon
-  const days = (date.getTime() - known) / 86400000;
-  const phase = ((days % synodic) + synodic) % synodic;
-  if (phase < 1.85) return "NEW MOON";
-  if (phase < 12.9) return "WAXING";
-  if (phase < 16.6) return "FULL MOON";
-  return "WANING";
-}
-
 export default function ResumePage() {
   const navigate = useNavigate();
   const [mounted, setMounted] = useState(false);
@@ -38,6 +29,9 @@ export default function ResumePage() {
   const [selected, setSelected] = useState(null);
   const [cursor, setCursor] = useState(0);
   const [keyNav, setKeyNav] = useState(false);
+  const [openNode, setOpenNode] = useState(null);
+  const { content, update } = useContent();
+  const NODES = LAYOUT.map((l) => ({ ...l, ...(content.future.nodes.find((n) => n.id === l.id) || {}) }));
   const [size, setSize] = useState({ w: 1600, h: 900 });
 
   useLayoutEffect(() => {
@@ -58,10 +52,11 @@ export default function ResumePage() {
 
   useEffect(() => {
     const onKey = (e) => {
+      if (document.body.classList.contains("p3-modal-open")) return;
       if (e.target.closest("button") && (e.key === "Enter" || e.key === " ")) return;
-      if (e.key === "ArrowRight" || e.key === "ArrowDown") { setKeyNav(true); setCursor((i) => (i + 1) % NODES.length); }
-      if (e.key === "ArrowLeft" || e.key === "ArrowUp") { setKeyNav(true); setCursor((i) => (i - 1 + NODES.length) % NODES.length); }
-      if (e.key === "Enter") setSelected((s) => (s === cursor ? null : cursor));
+      if (e.key === "ArrowRight" || e.key === "ArrowDown") { setKeyNav(true); setCursor((i) => (i + 1) % LAYOUT.length); }
+      if (e.key === "ArrowLeft" || e.key === "ArrowUp") { setKeyNav(true); setCursor((i) => (i - 1 + LAYOUT.length) % LAYOUT.length); }
+      if (e.key === "Enter") { setSelected(cursor); setOpenNode(cursor); }
       if (e.key === "Escape" || e.key === "Backspace") navigate("/");
     };
     window.addEventListener("keydown", onKey);
@@ -70,6 +65,13 @@ export default function ResumePage() {
 
   const now = new Date();
   const dateLabel = `${now.getMonth() + 1}/${now.getDate()} ${now.toLocaleDateString("en-US", { weekday: "short" }).toUpperCase()}`;
+  const current = openNode !== null ? NODES[openNode] : null;
+  const saveNode = async (values) => update((c) => ({
+    ...c,
+    future: {
+      nodes: c.future.nodes.map((n) => (n.id === current.id ? { ...n, label: (values.label || n.label).trim(), jp: values.jp ?? n.jp, body: values.body ?? "" } : n)),
+    },
+  }));
   const activeIndex = hovered ?? (keyNav ? cursor : null);
 
   return (
@@ -123,7 +125,7 @@ export default function ResumePage() {
               onMouseEnter={() => { setHovered(i); setCursor(i); setKeyNav(false); }}
               onMouseLeave={() => setHovered(null)}
               onFocus={() => setCursor(i)}
-              onClick={() => setSelected((s) => (s === i ? null : i))}
+              onClick={() => { setSelected(i); setOpenNode(i); }}
               aria-pressed={isSelected}
             >
               <span className="fp-node-red" aria-hidden="true" />
@@ -140,8 +142,24 @@ export default function ResumePage() {
 
       <div className={`fp-readout${mounted ? " mounted" : ""}`} aria-hidden="true">
         <span className="fp-readout-date">{dateLabel}</span>
-        <span className="fp-readout-moon">{moonPhaseLabel(now)}</span>
       </div>
+
+      <EditModal
+        open={openNode !== null}
+        onClose={() => setOpenNode(null)}
+        title={current?.label || ""}
+        subtitle={current?.jp}
+        view={current?.body
+          ? current.body.split(/\n{2,}/).map((p, i) => <p key={i}>{p}</p>)
+          : <p className="pm-empty">Nothing written here yet.</p>}
+        fields={[
+          { key: "label", label: "Box name", type: "text", maxLength: 24, placeholder: "e.g. EDUCATION" },
+          { key: "jp", label: "Subtitle (shown under the box)", type: "text", maxLength: 24 },
+          { key: "body", label: "Text", type: "textarea", placeholder: "Write anything you like here…" },
+        ]}
+        values={{ label: current?.label || "", jp: current?.jp || "", body: current?.body || "" }}
+        onSave={saveNode}
+      />
 
       <footer className={`fp-hint${mounted ? " mounted" : ""}`}>
         <span><i className="fp-dot" />BACK</span>
@@ -348,6 +366,7 @@ export default function ResumePage() {
         }
         .fp-node-label {
           display: block;
+          text-transform: uppercase;
           font-family: 'Bebas Neue', sans-serif;
           font-size: clamp(20px, 1.8vw, 28px);
           letter-spacing: 4px;
@@ -432,14 +451,6 @@ export default function ResumePage() {
           color: #fff;
           text-shadow: 2px 2px 0 #05070c, 0 0 14px rgba(0,0,0,0.5);
         }
-        .fp-readout-moon {
-          font-family: 'Bebas Neue', sans-serif;
-          font-size: 16px;
-          letter-spacing: 4px;
-          color: #05070c;
-          background: rgba(255,255,255,0.9);
-          padding: 2px 10px;
-        }
 
         /* ── Bottom-left hint ── */
         .fp-hint {
@@ -487,7 +498,6 @@ export default function ResumePage() {
           .fp-hint { font-size: 15px; gap: 12px; padding: 5px 12px 4px; }
           .fp-hint .fp-hint-keys { display: none; }
           .fp-readout-date { font-size: 18px; }
-          .fp-readout-moon { font-size: 12px; letter-spacing: 3px; }
         }
         /* Phones sideways: keep the scatter but tighten it. */
         @media (max-height: 520px) and (min-width: 721px) {
@@ -501,7 +511,6 @@ export default function ResumePage() {
           .fp-hint { font-size: 14px; padding: 4px 10px 3px; }
           .fp-hint .fp-hint-keys { display: none; }
           .fp-readout-date { font-size: 18px; }
-          .fp-readout-moon { font-size: 12px; }
         }
         @media (prefers-reduced-motion: reduce) {
           .fp-grain, .fp-entry-mask, .fp-node.active .fp-node-face, .fp-node.active .fp-node-ping { animation: none !important; }

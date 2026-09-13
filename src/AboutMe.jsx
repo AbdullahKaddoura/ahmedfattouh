@@ -1,5 +1,7 @@
 import { createElement, useCallback, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import { useContent } from "./useContent.js";
+import EditModal, { EditButton } from "./EditModal.jsx";
 import { FaScaleBalanced, FaGamepad, FaFilm, FaArrowLeft } from "react-icons/fa6";
 import char1 from "./assets/char1.png";
 import char2 from "./assets/char2.png";
@@ -65,7 +67,16 @@ export default function AboutMe() {
   const [mounted, setMounted] = useState(false);
   const [revealed, setRevealed] = useState(false);
   const [focus, setFocus] = useState(0);
+  const [editingBio, setEditingBio] = useState(false);
   const navigate = useNavigate();
+  const { content, update } = useContent();
+  const saveBio = async (values) => update((c) => ({
+    ...c,
+    about: {
+      bio: values.bio.split(/\n\s*\n/).map((p) => p.trim()).filter(Boolean),
+      focus: values.focus.trim(),
+    },
+  }));
 
   const goTab = useCallback((idx) => { setActive(idx); setFocus(0); }, []);
   const prevTab = useCallback(() => { setActive(i => (i - 1 + ITEMS.length) % ITEMS.length); setFocus(0); }, []);
@@ -84,6 +95,7 @@ export default function AboutMe() {
 
   useEffect(() => {
     const onKey = (e) => {
+      if (document.body.classList.contains("p3-modal-open")) return;
       if (e.target.closest("button")) return;
       if (e.key === "ArrowUp") {
         if (revealed && listLength) setFocus(i => (i - 1 + listLength) % listLength);
@@ -111,9 +123,11 @@ export default function AboutMe() {
     return () => window.removeEventListener("keydown", onKey);
   }, [navigate, revealed, listLength, prevTab, nextTab]);
 
-  const content = REVEAL_CONTENT[active];
+  const section = active === 0
+    ? { ...REVEAL_CONTENT[0], upper: content.about.bio, lower: content.about.focus }
+    : REVEAL_CONTENT[active];
   const isBio = active === 0;
-  const featured = isBio ? null : content.upper[Math.min(focus, content.upper.length - 1)];
+  const featured = isBio ? null : section.upper[Math.min(focus, section.upper.length - 1)];
 
   return (
     <div id="menu-screen">
@@ -131,10 +145,10 @@ export default function AboutMe() {
             <button type="button" className="am-nav-arrow right" onClick={nextTab} aria-label="Next section">►</button>
           </div>
           <div className="am-reveal-backplate" aria-hidden="true" />
-          <section className="am-reveal-panel" aria-label={content.lower}>
+          <section className="am-reveal-panel" aria-label={section.lower}>
             <header className="am-reveal-head">
               <div className="am-reveal-title-block">
-                <span className="am-reveal-eyebrow">{content.eyebrow}</span>
+                <span className="am-reveal-eyebrow">{section.eyebrow}</span>
                 <h2 className="am-reveal-title" key={`title-${active}`}>{ITEMS[active].label}</h2>
               </div>
               <div className="am-tab-navigation" role="tablist" aria-label="Sections">
@@ -156,13 +170,13 @@ export default function AboutMe() {
 
             <div className={`am-reveal-upper-bar ${isBio ? "am-bio-content" : "am-favorites-content"}`} key={`body-${active}`}>
               {isBio
-                ? content.upper.map((line) => (
+                ? section.upper.map((line) => (
                   <p className="am-reveal-upper-line" key={line}>{line}</p>
                 ))
                 : (
                   <div className="am-gallery">
-                    <ol className="am-reveal-list" aria-label={content.lower}>
-                      {content.upper.map((entry, idx) => (
+                    <ol className="am-reveal-list" aria-label={section.lower}>
+                      {section.upper.map((entry, idx) => (
                         <li key={entry.title}>
                           <button
                             type="button"
@@ -201,14 +215,15 @@ export default function AboutMe() {
 
             <footer className="am-reveal-lower-bar" key={`foot-${active}`}>
               <span className="am-reveal-lower-icon" aria-hidden="true">
-                {createElement(content.icon)}
+                {createElement(section.icon)}
               </span>
-              <span className="am-reveal-lower-text">{content.lower}</span>
+              <span className="am-reveal-lower-text">{section.lower}</span>
+              {isBio && <EditButton onClick={() => setEditingBio(true)} />}
               {featured && (
-                <span className="am-reveal-counter" aria-label={`Item ${focus + 1} of ${content.upper.length}`}>
+                <span className="am-reveal-counter" aria-label={`Item ${focus + 1} of ${section.upper.length}`}>
                   <span className="am-reveal-counter-cur">{pad2(focus)}</span>
                   <span className="am-reveal-counter-sep">/</span>
-                  <span>{pad2(content.upper.length - 1)}</span>
+                  <span>{pad2(section.upper.length - 1)}</span>
                 </span>
               )}
             </footer>
@@ -225,6 +240,18 @@ export default function AboutMe() {
           </div>
         </div>
       )}
+
+      <EditModal
+        open={editingBio}
+        onClose={() => setEditingBio(false)}
+        title="ABOUT ME"
+        fields={[
+          { key: "bio", label: "About text (blank line between paragraphs)", type: "textarea" },
+          { key: "focus", label: "Bottom line", type: "text", maxLength: 40, placeholder: "Focus: Lawyer" },
+        ]}
+        values={{ bio: content.about.bio.join("\n\n"), focus: content.about.focus }}
+        onSave={saveBio}
+      />
 
       <style>{`
         @import url('https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:ital,wght@0,400;0,600;0,700;1,700&display=swap');

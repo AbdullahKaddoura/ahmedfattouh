@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { FaDiscord, FaInstagram, FaTiktok } from "react-icons/fa6";
+import { useContent } from "./useContent.js";
+import EditModal, { EditButton } from "./EditModal.jsx";
 import char1 from "./assets/char1.png";
 import char2 from "./assets/char2.png";
 import char3 from "./assets/char3.png";
@@ -14,7 +16,7 @@ const ROLES = [
   { text: "PARTY", color: "#4a8fff", bg: "rgba(74,143,255,0.12)", border: "rgba(74,143,255,0.5)" },
 ];
 
-const ITEMS = [
+const BASE_ITEMS = [
   {
     id: "instagram", label: "INSTAGRAM", handle: "@ahmd.ftt", href: "https://www.instagram.com/ahmd.ftt?stkn=NnUxZGhrdWl2MmJ2", icon: FaInstagram,
     details: [
@@ -46,7 +48,26 @@ export default function Socials() {
   const [mounted, setMounted] = useState(false);
   const [activeInfoBar, setActiveInfoBar] = useState(0);
   const [focus, setFocus] = useState("left"); // "left" | "right"
+  const [editing, setEditing] = useState(false);
   const navigate = useNavigate();
+  const { content, update } = useContent();
+
+  // Details and links come from the editable content store.
+  const ITEMS = BASE_ITEMS.map((item) => {
+    const s = content.socials[item.id] || {};
+    return {
+      ...item,
+      href: s.url || item.href,
+      details: [
+        { label: "USER", value: s.user || item.details[0].value, icon: "" },
+        { label: "STATUS", value: s.status || item.details[1].value, icon: "" },
+      ],
+    };
+  });
+  const saveSocial = async (values) => update((c) => ({
+    ...c,
+    socials: { ...c.socials, [ITEMS[active].id]: { user: values.user.trim(), status: values.status.trim(), url: values.url.trim() } },
+  }));
 
   useEffect(() => {
     const v = document.querySelector('video');
@@ -60,6 +81,7 @@ export default function Socials() {
 
   useEffect(() => {
     const onKey = (e) => {
+      if (document.body.classList.contains("p3-modal-open")) return;
       if (focus === "left") {
         if (e.key === "ArrowUp") setActive(i => Math.max(0, i - 1));
         if (e.key === "ArrowDown") setActive(i => Math.min(ITEMS.length - 1, i + 1));
@@ -231,16 +253,17 @@ export default function Socials() {
         }
 
         .sc-icon {
-          font-family: 'Bebas Neue', sans-serif;
           font-size: clamp(1.4rem, 2.2vw, 2.25rem);
           width: 42px;
-          text-align: center;
+          display: flex;
+          align-items: center;
+          justify-content: center;
           flex-shrink: 0;
-          color: rgba(255,255,255,0.15);
-          transition: color 0.2s ease;
+          color: #ffffff;
+          transition: color 0.2s ease, transform 0.25s cubic-bezier(0.34, 1.56, 0.64, 1);
           user-select: none;
         }
-        .sc-bar-outer.active .sc-icon { color: rgba(255,255,255,0.25); }
+        .sc-bar-outer.active .sc-icon { color: #111111; transform: scale(1.15); }
 
         .sc-label {
           font-family: 'Bebas Neue', sans-serif;
@@ -452,6 +475,21 @@ export default function Socials() {
           padding: 1px 6px; font-size: 11px;
         }
 
+        .sc-edit-wrap {
+          position: fixed;
+          right: 28px;
+          top: 330px;
+          z-index: 50;
+          pointer-events: none;
+        }
+        .sc-edit-wrap > * { pointer-events: auto; }
+        @media (max-width: 720px) {
+          .sc-edit-wrap { top: calc(16px + env(safe-area-inset-top, 0px)); right: 4vw; }
+        }
+        @media (max-height: 520px) and (min-width: 721px) {
+          .sc-edit-wrap { top: auto; bottom: 26px; right: 16px; }
+        }
+
         .sc-back-button {
           position: fixed;
           bottom: 26px;
@@ -592,7 +630,7 @@ export default function Socials() {
           onMouseEnter={() => setActiveInfoBar(i)}
         >
           <div className="sc-info-bar">
-            <span style={{ fontSize: '24px', marginLeft: '14px', marginRight: '8px' }}>{detail.icon}</span>
+            {detail.icon && <span style={{ fontSize: '24px', marginLeft: '14px', marginRight: '8px' }}>{detail.icon}</span>}
             <span className="sc-info-bar-text" style={{ flex: '0 0 80px' }}>{detail.label}</span>
             <span className="sc-info-bar-count" style={{
               flex: 1,
@@ -605,6 +643,25 @@ export default function Socials() {
           </div>
         </div>
       ))}
+
+      {mounted && (
+        <div className="sc-edit-wrap">
+          <EditButton onClick={() => setEditing(true)} label="EDIT DETAILS" />
+        </div>
+      )}
+
+      <EditModal
+        open={editing}
+        onClose={() => setEditing(false)}
+        title={ITEMS[active].label}
+        fields={[
+          { key: "user", label: "Username", type: "text", maxLength: 40, placeholder: "@handle" },
+          { key: "status", label: "Status", type: "text", maxLength: 24, placeholder: "Active" },
+          { key: "url", label: "Profile link", type: "url", placeholder: "https://…" },
+        ]}
+        values={{ user: ITEMS[active].details[0].value, status: ITEMS[active].details[1].value, url: ITEMS[active].href }}
+        onSave={saveSocial}
+      />
 
       <button
         type="button"

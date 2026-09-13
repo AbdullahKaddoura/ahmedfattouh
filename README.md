@@ -109,3 +109,17 @@ This project is a customized, personal evolution of the **Persona 3 UI** web exp
 | :--- | :--- | :--- |
 | **blairxu13** | Original UI design, base styling, and structure template | [@blairxu13](https://github.com/blairxu13) |
 | **Mohammad Hussain** | Custom Cyber-Lab aesthetics, Bento-grid layouts, GitHub integration, and key controls | [@MdHussain121](https://github.com/MdHussain121) |
+
+## ✏️ Editable content
+
+Some text on the site can be changed from the site itself by whoever knows the edit password:
+
+* **Future Persona** — each box: its name, subtitle, and text (click a box → EDIT).
+* **Socials** — username, status, and profile link per platform (EDIT DETAILS).
+* **About Me → About Me tab** — the bio paragraphs and the bottom line (EDIT in the footer strip).
+
+The default password is `1509`; set the `EDIT_PASSWORD` environment variable on the server to change it.
+Edits are saved by the Express server into `data/content.json` (created on first save, not committed).
+When the site is served without the Express server (for example the Vite dev server or a static host),
+edits are kept in that browser only. For local development with the API, run
+`PORT=3100 npm start` next to `npm run dev`; Vite proxies `/api` to it.

@@ -15,9 +15,9 @@ export const TRACKS = [
     src: new URL("../music/Persona 3 Reload - It's Going Down Now (with Lyrics).mp3", import.meta.url).href,
   },
   {
-    id: 'want-to-be-close',
-    title: 'Want To Be Close',
-    src: new URL('../music/Want To Be Close -Reload-.mp3', import.meta.url).href,
+    id: 'color-your-night',
+    title: 'Color Your Night',
+    src: new URL('../music/Color Your Night.mp3', import.meta.url).href,
   },
   {
     id: 'moon-reaching-out-stars',
@@ -53,6 +53,11 @@ export const TRACKS = [
     id: 'wiping-all-out',
     title: 'Wiping All Out',
     src: new URL('../music/Wiping All Out.mp3', import.meta.url).href,
+  },
+  {
+    id: 'want-to-be-close',
+    title: 'Want To Be Close',
+    src: new URL('../music/Want To Be Close -Reload-.mp3', import.meta.url).href,
   },
 ]
 
