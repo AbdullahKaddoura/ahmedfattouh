@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { FaBackwardStep, FaForwardStep, FaPlay, FaPause, FaShuffle, FaRepeat, FaVolumeHigh, FaVolumeXmark, FaArrowLeft } from "react-icons/fa6";
 import { useSoundtrack } from "./SoundtrackContext.js";
 
-const BG_VIDEO = new URL("../music/videoplayback.mp4", import.meta.url).href;
+const BG_VIDEO = new URL("../music/music-bg.mp4", import.meta.url).href;
 // The background shows one random 60-second slice from the middle half of the
 // video and loops that same slice.
 const CLIP_SECONDS = 60;
