@@ -68,7 +68,7 @@ export default function EditModal({ open, onClose, title, subtitle, view, fields
     const result = await onSave(draft);
     setSaving(false);
     if (!result?.ok) { setError(result?.error || "Could not save."); return; }
-    setSavedNote(result.source === "local" ? "Saved on this device only (no server available)." : "Saved.");
+    setSavedNote(result.source === "local" ? "Saved on this device only: shared storage isn't set up yet." : "Saved.");
     if (view) setMode("view"); else onClose();
   };
 
@@ -156,7 +156,7 @@ export default function EditModal({ open, onClose, title, subtitle, view, fields
                 </label>
               ))}
               {error && <span className="pm-error" role="alert">{error}</span>}
-              {source === "local" && <span className="pm-note">No server detected: changes will be kept on this device only.</span>}
+              {source === "local" && <span className="pm-note">Shared storage isn't set up yet, so changes are saved on this device only.</span>}
               <footer className="pm-foot">
                 <span className="pm-spacer" />
                 <button type="button" className="pm-btn" onClick={view ? () => setMode("view") : onClose}>CANCEL</button>

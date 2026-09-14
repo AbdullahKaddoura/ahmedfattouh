@@ -31,7 +31,7 @@ export default function ListEditor({ draft, setDraft, placeholderIcon }) {
       const dataUrl = await fileToDataUrl(file);
       const r = await uploadImage(dataUrl);
       patch(id, { poster: r.url, showImage: true });
-      if (r.source === "local") setNote("No server detected: the image is stored in this browser only.");
+      if (r.source === "local") setNote("Shared storage isn't set up yet, so this image is saved on this device only.");
     } catch (err) {
       setNote(err.message || "Could not use that image.");
     } finally {
