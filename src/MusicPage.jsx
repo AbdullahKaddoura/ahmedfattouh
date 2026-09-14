@@ -177,7 +177,7 @@ export default function MusicPage() {
       if (e.key === "ArrowUp") { e.preventDefault(); setCursor((cursor - 1 + tracks.length) % tracks.length); }
       if (e.key === "ArrowDown") { e.preventDefault(); setCursor((cursor + 1) % tracks.length); }
       if (e.key === "Enter") player.selectTrack(tracks[cursor]);
-      if (e.key === "l" || e.key === "L") toggleList();
+      if ((e.key === "l" || e.key === "L") && window.matchMedia("(max-width: 720px)").matches) toggleList();
       if (e.key === "ArrowRight") player.seekBy(5);
       if (e.key === "ArrowLeft") player.seekBy(-5);
       if (e.key === "Escape" || e.key === "Backspace") navigate("/");
@@ -254,6 +254,7 @@ export default function MusicPage() {
         }
 
         .mu-list-toggle {
+          display: none;
           align-self: flex-start;
           margin-top: 8px;
           min-height: 34px;
@@ -282,7 +283,7 @@ export default function MusicPage() {
           z-index: 10;
           display: flex;
         }
-        .mu-list-wrap.hidden { display: none; }
+        .mu-list-wrap.hidden { display: flex; }
         .mu-sweep {
           position: absolute;
           inset: 0;
@@ -750,7 +751,8 @@ export default function MusicPage() {
           .mu-track-len { font-size: 14px; }
           .mu-stage { position: relative; top: auto; right: auto; transform: none; width: 100%; margin-top: 10px; flex: 0 0 auto; }
           .mu-screen.list-hidden .mu-stage { margin-top: auto; }
-          .mu-list-toggle { margin-top: 6px; min-height: 32px; font-size: 15px; }
+          .mu-list-toggle { display: inline-flex; margin-top: 6px; min-height: 32px; font-size: 15px; }
+          .mu-list-wrap.hidden { display: none; }
           .mu-backplate { transform: translate(8px, 8px); }
           .mu-panel { padding: 10px 34px 10px 12px; gap: 8px; }
           .mu-now { gap: 12px; }
