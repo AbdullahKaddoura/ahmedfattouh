@@ -215,8 +215,7 @@ export default function P3Menu({ onNavigate }) {
         .p3r-index {
           position: absolute;
           left: -4.5rem;
-          top: auto;
-          bottom: -4rem;
+          top: -18rem;
           z-index: 1;
           font-family: 'Rodin Pro', sans-serif;
           font-style: italic;
@@ -237,20 +236,21 @@ export default function P3Menu({ onNavigate }) {
         .p3r-title {
           position: absolute;
           top: calc(18px + env(safe-area-inset-top, 0px));
-          left: calc(22px + env(safe-area-inset-left, 0px));
+          right: calc(28px + env(safe-area-inset-right, 0px));
           z-index: 4;
           margin: 0;
           display: flex;
           flex-direction: column;
-          align-items: flex-start;
+          align-items: flex-end;
+          text-align: right;
           font-family: 'Anton', sans-serif;
           font-weight: 400;
           font-style: italic;
-          font-size: clamp(44px, 9vw, 108px);
+          font-size: clamp(40px, 5.6vw, 88px);
           line-height: 0.88;
           letter-spacing: 2px;
-          transform: rotate(18deg);
-          transform-origin: left top;
+          text-transform: uppercase;
+          transform: none;
           user-select: none;
           pointer-events: none;
           opacity: 0;
@@ -433,8 +433,8 @@ export default function P3Menu({ onNavigate }) {
         }
         @media (max-width: 720px) {
           .p3r-options { left: -3vw; justify-content: center; padding-bottom: 18vh; }
-          .p3r-index { font-size: 26vh; left: -3rem; top: auto; bottom: -2rem; }
-          .p3r-title { top: calc(10px + env(safe-area-inset-top, 0px)); left: 12px; font-size: 44px; }
+          .p3r-index { font-size: 26vh; left: -3rem; top: -12rem; }
+          .p3r-title { top: calc(12px + env(safe-area-inset-top, 0px)); right: 14px; font-size: 40px; }
           .p3r-desc { font-size: 20px; padding-right: 20px; }
           .p3r-command { font-size: 13px; }
           .p3r-controls { padding-right: 20px; gap: 12px; margin: 10px 0 14px; }
@@ -443,7 +443,7 @@ export default function P3Menu({ onNavigate }) {
         }
         @media (max-height: 520px) {
           .p3r-index { font-size: 30vh; }
-          .p3r-title { top: 8px; left: 12px; font-size: 40px; }
+          .p3r-title { top: 8px; right: 14px; font-size: 34px; }
           .p3r-desc { font-size: 20px; }
           .p3r-control { font-size: 18px; }
           .p3r-key { min-width: 26px; height: 26px; font-size: 12px; }
