@@ -260,14 +260,11 @@ export default function AboutMe() {
 
           <div className={`am-main-portrait-shell${mounted ? " mounted" : ""}`}>
             <img className="am-main-portrait-bg" src={MAIN_IMAGES[active]} alt="" aria-hidden="true" />
-            <span className="am-cutin-lines" aria-hidden="true" />
-            <span className="am-cutin-red" aria-hidden="true" />
-            <img
-              key={active}
-              className="am-main-portrait"
-              src={MAIN_IMAGES[active]}
-              alt=""
-            />
+            <div className="am-portrait-frame" key={`frame-${active}`}>
+              <span className="am-cutin-lines" aria-hidden="true" />
+              <span className="am-cutin-red" aria-hidden="true" />
+              <img className="am-main-portrait" src={MAIN_IMAGES[active]} alt="" />
+            </div>
             <div className="am-cutin-label" aria-hidden="true">
               <span className="am-cutin-num">{pad2(active)}</span>
               <span className="am-cutin-text">{ITEMS[active].label}</span>
@@ -605,7 +602,7 @@ export default function AboutMe() {
         }
         .am-spotlight-empty svg { font-size: 34px; }
         .am-main-portrait-bg { display: none; }
-        .am-cutin-label, .am-cutin-lines, .am-cutin-red { display: none; }
+        .am-cutin-label { display: none; }
         .am-reveal-text { display: flex; flex-direction: column; min-width: 0; }
         .am-reveal-title-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .am-reveal-meta {
@@ -816,39 +813,79 @@ export default function AboutMe() {
         .am-right-nav .am-nav-arrow.right { animation: am-arrow-right 0.8s ease-in-out infinite; }
         .am-right-nav .am-nav-arrow:hover { color: #fff; }
 
-        /* ── Portrait (kept as the skewed P3 cut-in) ── */
+        /* ── Portrait: the whole image is always visible, never cropped or clipped.
+              The frame matches the portraits' 3:5 shape; the slanted red card and
+              hatch lines behind it carry the Persona look. ── */
         @keyframes am-portrait-in {
-          0%   { opacity: 0; transform: translateX(78px) skewX(-8deg) scale(0.94); filter: blur(8px); }
-          55%  { opacity: 0.9; transform: translateX(-8px) skewX(-8deg) scale(1.015); filter: blur(0); }
-          100% { opacity: 0.96; transform: translateX(0) skewX(-8deg) scale(1); filter: blur(0); }
+          0%   { opacity: 0; transform: translateX(60px); }
+          60%  { opacity: 1; transform: translateX(-6px); }
+          100% { opacity: 1; transform: translateX(0); }
         }
         .am-main-portrait-shell {
+          /* width leaves room for the panel, its backplate, the hatch card, and a gap */
+          --pw: min(calc(34vw - 50px), calc(84vh * 0.6), calc((100vh - 220px) * 0.6));
           position: absolute;
-          top: 0;
-          right: -10vw;
+          top: calc(50% - 40px);
+          right: 3vw;
+          translate: 0 -50%;
+          width: var(--pw);
+          height: calc(var(--pw) / 0.6);
           z-index: 50;
           pointer-events: none;
-          width: 42vw;
-          height: 100vh;
-          overflow: hidden;
           opacity: 0;
-          transform: translateX(24px) skewX(-8deg) scale(0.98);
-          transition: opacity 0.35s ease, transform 0.35s ease;
-          box-shadow: -14px 0 0 var(--p3-red-accent), -22px 0 0 rgba(255,255,255,0.12);
+          transition: opacity 0.35s ease;
         }
         .am-main-portrait-shell.mounted {
-          opacity: 0.96;
-          transform: translateX(0) skewX(-8deg) scale(1);
-          animation: am-portrait-in 0.5s cubic-bezier(0.22, 1, 0.36, 1);
+          opacity: 1;
+          animation: am-portrait-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+        }
+        .am-portrait-frame { position: relative; width: 100%; height: 100%; }
+        .am-cutin-lines, .am-cutin-red {
+          display: block;
+          position: absolute;
+          top: 0; left: 0;
+          width: 100%; height: 100%;
+          clip-path: polygon(14% 0, 100% 0, 86% 100%, 0 100%);
+        }
+        .am-cutin-lines {
+          z-index: 0;
+          transform: translate(-34px, 34px);
+          background: repeating-linear-gradient(-32deg, var(--p3-red-accent) 0 5px, transparent 5px 16px);
+          opacity: 0.9;
+        }
+        .am-cutin-red {
+          z-index: 1;
+          transform: translate(-17px, 17px);
+          background: var(--p3-red-accent);
         }
         .am-main-portrait {
+          position: relative;
+          z-index: 2;
+          display: block;
           width: 100%;
           height: 100%;
-          object-fit: cover;
-          object-position: top right;
-          transform: skewX(8deg) scale(1.08) translateY(-40px);
-          transform-origin: top right;
+          object-fit: contain;
+          object-position: center;
+          filter: drop-shadow(-6px 6px 0 rgba(0, 0, 0, 0.55));
         }
+
+        /* ── Long editable text never resizes a component or spills over another ── */
+        .am-bio-content .am-reveal-upper-line { overflow-wrap: anywhere; }
+        .am-reveal-text { flex: 1 1 auto; overflow: hidden; }
+        .am-reveal-list > li { min-width: 0; }
+        .am-reveal-title-block { flex: 1 1 auto; overflow: hidden; }
+        .am-reveal-title { max-width: 100%; overflow: hidden; text-overflow: ellipsis; }
+        .am-reveal-title-line, .am-reveal-meta {
+          display: block; max-width: 100%;
+          white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+        }
+        .am-spotlight-caption { flex: 1 1 auto; min-width: 0; max-width: 100%; }
+        .am-spotlight-title, .am-spotlight-meta {
+          overflow-wrap: anywhere;
+          display: -webkit-box; -webkit-box-orient: vertical; overflow: hidden;
+        }
+        .am-spotlight-title { -webkit-line-clamp: 3; }
+        .am-spotlight-meta { -webkit-line-clamp: 2; }
 
         /* ── Menu bars (unchanged Persona party list) ── */
         .am-bar {
@@ -1031,8 +1068,9 @@ export default function AboutMe() {
         @media (max-width: 1100px) {
           .am-reveal-frame { width: 66vw; }
           .am-reveal-head { flex-direction: column; align-items: flex-start; }
-          .am-reveal-list { grid-template-columns: 1fr; }
+          .am-reveal-list { grid-template-columns: minmax(0, 1fr); }
           .am-spotlight { width: 150px; }
+          .am-main-portrait-shell { --pw: min(calc(28vw - 50px), calc(84vh * 0.6), calc((100vh - 220px) * 0.6)); }
         }
         @media (max-width: 720px) {
           .am-bar, .am-bar-red { width: 94vw; }
@@ -1055,16 +1093,16 @@ export default function AboutMe() {
           .am-reveal-counter { font-size: 16px; gap: 4px; }
           .am-reveal-counter-cur { font-size: 22px; }
           .am-favorites-content { padding: 12px 20px 12px 12px; }
-          .am-gallery { grid-template-columns: 1fr; gap: 14px; }
+          .am-gallery { grid-template-columns: minmax(0, 1fr); gap: 14px; }
           .am-spotlight { width: 100%; flex-direction: row; align-items: flex-end; gap: 12px; }
           .am-spotlight-backplate, .am-spotlight-frame { width: 96px; aspect-ratio: 2 / 3; }
           .am-spotlight-caption { padding-bottom: 6px; }
           .am-favorites-content .am-reveal-upper-line { font-size: 16px; }
           .am-right-nav .am-nav-btn { font-size: 40px; }
         }
-        /* Portrait phones: a simple top-to-bottom column — character banner, then the panel.
-           Nothing is absolutely positioned here, so nothing can overlap. */
-        @media (max-width: 720px) {
+        /* Portrait phones and tablets: a simple top-to-bottom column — character banner,
+           then the panel. Nothing in the flow is absolutely positioned, so nothing overlaps. */
+        @media (max-width: 1100px) and (orientation: portrait) {
           .am-right-nav { display: none; }
           .am-reveal-stage {
             display: flex;
@@ -1084,6 +1122,8 @@ export default function AboutMe() {
             width: 100%;
             height: auto;
             top: auto; right: auto; left: auto;
+            translate: none;
+            container-type: size;
             opacity: 1;
             transform: none;
             animation: none;
@@ -1104,34 +1144,18 @@ export default function AboutMe() {
             left: -12%; right: -12%; top: 76%; height: 4%;
             background: var(--p3-red-accent); transform: rotate(-11deg);
           }
-          /* layered backing cards behind the face, like the game's cut-ins */
-          .am-cutin-lines, .am-cutin-red {
-            display: block; position: absolute;
-            width: 60vw; height: 94%;
-            clip-path: polygon(18% 0, 100% 0, 100% 100%, 0 100%);
-            animation: am-cutin-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
-          }
-          .am-cutin-lines {
-            z-index: 1; right: 2vw; top: 9%;
-            background: repeating-linear-gradient(-32deg, var(--p3-red-accent) 0 5px, transparent 5px 16px);
-            opacity: 0.9;
-            animation-delay: 0.08s;
-          }
-          .am-cutin-red {
-            z-index: 1; right: -1vw; top: 6%;
-            background: var(--p3-red-accent);
-            animation-delay: 0.04s;
-          }
-          .am-main-portrait {
+          /* the whole face in a 3:5 frame on the right, red card + hatch lines behind */
+          .am-portrait-frame {
             position: absolute; z-index: 2;
-            right: -4vw; top: 3%;
-            width: 60vw; height: 94%;
-            object-fit: cover; object-position: center 18%;
-            transform: none;
-            clip-path: polygon(18% 0, 100% 0, 100% 100%, 0 100%);
-            filter: drop-shadow(-8px 8px 0 rgba(0, 0, 0, 0.75));
+            top: 4cqh; right: 6vw;
+            /* sized from the band's own height, so the 3:5 frame always fits inside it */
+            height: min(84cqh, calc(44vw / 0.6));
+            width: calc(min(84cqh, calc(44vw / 0.6)) * 0.6);
             animation: am-cutin-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
           }
+          .am-cutin-lines { transform: translate(-16px, 12px); }
+          .am-cutin-red { transform: translate(-8px, 6px); }
+          .am-main-portrait { filter: drop-shadow(-6px 6px 0 rgba(0, 0, 0, 0.75)); }
           @keyframes am-cutin-in {
             0%   { opacity: 0; transform: translateX(40px) skewX(-8deg); }
             100% { opacity: 1; transform: translateX(0) skewX(0); }
@@ -1178,13 +1202,13 @@ export default function AboutMe() {
           .am-bio-content .am-reveal-upper-line { font-size: 15px; line-height: 1.5; }
           .am-bio-content .am-reveal-upper-line:first-child { font-size: 16px; }
           .am-favorites-content { padding: 12px 14px; }
-          .am-gallery { grid-template-columns: 1fr; gap: 12px; }
+          .am-gallery { grid-template-columns: minmax(0, 1fr); gap: 12px; }
           .am-spotlight { order: -1; width: 100%; flex-direction: row; align-items: flex-start; gap: 14px; }
           .am-spotlight-frame { flex: 0 0 40vw; width: 40vw; aspect-ratio: 2 / 3; }
           .am-spotlight-backplate { width: 40vw; height: auto; aspect-ratio: 2 / 3; }
           .am-spotlight-caption { padding-top: 6px; padding-bottom: 0; }
           .am-spotlight-title { font-size: 20px; }
-          .am-reveal-list { grid-template-columns: 1fr; }
+          .am-reveal-list { grid-template-columns: minmax(0, 1fr); }
           .am-favorites-content .am-reveal-upper-line { font-size: 16px; padding: 6px 8px; min-height: 44px; }
           .am-reveal-thumb { width: 30px; height: 40px; }
           .am-reveal-lower-bar { min-height: 46px; font-size: 16px; }
@@ -1192,10 +1216,17 @@ export default function AboutMe() {
           .am-reveal-lower-icon > svg { width: 18px; height: 18px; }
         }
         /* Phones held sideways: very little height, so compress the panel and let it scroll. */
-        @media (max-height: 520px) {
+        @media (max-height: 600px) and (orientation: landscape) {
           .am-right-nav { display: none; }
-          .am-reveal-frame { top: 50%; left: 2vw; width: 64vw; max-height: 92vh; }
-          .am-reveal-panel { min-height: 0; max-height: 92vh; padding: 10px 40px 10px 14px; gap: 8px; }
+          /* top-aligned, ending above the fixed BACK button */
+          .am-reveal-frame {
+            top: 8px; transform: none; left: 2vw; width: 64vw;
+            max-height: calc(100vh - 84px - env(safe-area-inset-bottom, 0px));
+          }
+          .am-reveal-panel { min-height: 0; max-height: calc(100vh - 84px - env(safe-area-inset-bottom, 0px)); padding: 10px 40px 10px 14px; gap: 8px; }
+          /* the highlighted tab already names the section; keyboard hints would sit under the portrait */
+          .am-reveal-title { display: none; }
+          .am-footer { display: none; }
           .am-reveal-head { flex-direction: row; align-items: center; padding-bottom: 6px; gap: 10px; }
           .am-reveal-eyebrow { display: none; }
           .am-reveal-title { font-size: 26px; letter-spacing: 2px; }
@@ -1206,7 +1237,7 @@ export default function AboutMe() {
           .am-bio-content .am-reveal-upper-line:first-child { font-size: 14px; }
           .am-favorites-content { padding: 8px 14px; }
           .am-gallery { grid-template-columns: minmax(0, 1fr) 96px; gap: 10px; }
-          .am-reveal-list { grid-template-columns: 1fr; }
+          .am-reveal-list { grid-template-columns: minmax(0, 1fr); }
           .am-favorites-content .am-reveal-upper-line { font-size: 14px; padding: 4px 6px; gap: 6px; }
           .am-reveal-thumb { width: 22px; height: 30px; }
           .am-reveal-meta { display: none; }
@@ -1215,7 +1246,7 @@ export default function AboutMe() {
           .am-reveal-lower-bar { min-height: 40px; font-size: 15px; padding: 4px 12px; }
           .am-reveal-lower-icon { width: 30px; height: 30px; }
           .am-reveal-lower-icon > svg { width: 16px; height: 16px; }
-          .am-main-portrait-shell { right: -14vw; width: 44vw; }
+          .am-main-portrait-shell { --pw: min(calc(31vw - 50px), calc(80vh * 0.6)); top: 50%; }
           .am-bar { height: 48px; }
           .am-bar-outer.active .am-bar, .am-bar-outer.active .am-bar-red { height: 60px; }
           .am-root { gap: 4px; }

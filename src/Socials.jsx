@@ -443,7 +443,10 @@ export default function Socials() {
           font-size: 26px;
           letter-spacing: 1px;
           color: #ffffff;
-          flex-shrink: 0;
+          flex-shrink: 1;
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
           user-select: none;
           white-space: nowrap;
           transition: color 0.15s ease;
@@ -484,7 +487,8 @@ export default function Socials() {
         }
         .sc-edit-wrap > * { pointer-events: auto; }
         @media (max-width: 720px) {
-          .sc-edit-wrap { top: calc(16px + env(safe-area-inset-top, 0px)); right: 4vw; }
+          /* just above the detail rows, clear of the LB/RB switcher at the top */
+          .sc-edit-wrap { top: auto; bottom: calc(15vh + 134px + env(safe-area-inset-bottom, 0px)); right: 4vw; }
         }
         @media (max-height: 520px) and (min-width: 721px) {
           .sc-edit-wrap { top: auto; bottom: 26px; right: 16px; }

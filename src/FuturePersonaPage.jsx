@@ -372,6 +372,11 @@ export default function FuturePersonaPage() {
           letter-spacing: 4px;
           line-height: 1;
           white-space: nowrap;
+          /* long names truncate instead of stretching the box across the screen */
+          max-width: min(20vw, 340px);
+          min-width: 0;
+          overflow: hidden;
+          text-overflow: ellipsis;
         }
         /* subtitle bar that pops out under the box on hover / focus */
         .fp-node-sub {
@@ -386,6 +391,9 @@ export default function FuturePersonaPage() {
           background: #05070c;
           padding: 3px 14px 2px;
           white-space: nowrap;
+          max-width: min(22vw, 320px);
+          overflow: hidden;
+          text-overflow: ellipsis;
           opacity: 0;
           transform: translateY(-8px) scaleX(0.6);
           transform-origin: left center;
@@ -490,9 +498,9 @@ export default function FuturePersonaPage() {
           }
           .fp-node { position: static !important; width: 100%; }
           .fp-node-face { height: 54px; padding: 0 24px 0 16px; }
-          .fp-node-label { font-size: 20px; letter-spacing: 3px; }
+          .fp-node-label { font-size: 20px; letter-spacing: 3px; max-width: none; }
           .fp-node-num { font-size: 20px; }
-          .fp-node-sub { right: 8px; }
+          .fp-node-sub { right: 8px; max-width: 70vw; }
           .fp-node.active .fp-node-face { animation: none; transform: scale(1.03); }
           .fp-lines { opacity: 0.45; }
           .fp-command { top: 3vh; }

@@ -258,6 +258,10 @@ export default function EditModal({ open, onClose, title, subtitle, view, fields
           transform-origin: left bottom;
           text-shadow: 3px 3px 0 rgba(0,0,0,0.55);
           overflow-wrap: anywhere;
+          display: -webkit-box;
+          -webkit-line-clamp: 3;
+          -webkit-box-orient: vertical;
+          overflow: hidden;
         }
         .pm-subtitle {
           font-family: 'Noto Sans JP', 'NewRodin Pro', sans-serif; font-weight: 700;
@@ -377,6 +381,7 @@ export function EditButton({ onClick, className = "", label = "EDIT" }) {
         .pm-edit-trigger {
           display: inline-flex; align-items: center; gap: 8px;
           min-height: 36px; padding: 6px 14px;
+          flex-shrink: 0; white-space: nowrap;
           font-family: 'Bebas Neue', sans-serif; font-size: 17px; letter-spacing: 2px;
           color: var(--p3-blue-light); background: rgba(0,0,0,0.7);
           border: 1px solid rgba(141,246,255,0.45);
