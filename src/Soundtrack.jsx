@@ -158,17 +158,41 @@ export function SoundtrackProvider({ children }) {
     }
   }, [stepTrack])
 
+  // Browsers refuse to start audio before the visitor interacts with the page.
+  // Try immediately (works for repeat visitors Chrome already trusts), then retry
+  // on every qualifying gesture until playback actually starts.
   useEffect(() => {
-    const unlockAudio = () => {
+    let done = false
+    const EVENTS = ['pointerdown', 'pointerup', 'touchend', 'keydown', 'click']
+
+    const attempt = () => {
       const audio = audioRef.current
-      if (audio && audio.paused && currentTrackRef.current) audio.play().catch(() => {})
-      if (audioGraphRef.current?.ctx.state !== 'running') audioGraphRef.current?.ctx.resume().catch(() => {})
+      if (done || !audio || !currentTrackRef.current) return
+      if (audioGraphRef.current?.ctx.state === 'suspended') audioGraphRef.current.ctx.resume().catch(() => {})
+      if (!audio.paused) { finish(); return }
+      audio.play().then(finish).catch(() => {})
     }
-    window.addEventListener('pointerdown', unlockAudio, { once: true })
-    window.addEventListener('keydown', unlockAudio, { once: true })
+
+    const finish = () => {
+      if (done) return
+      done = true
+      EVENTS.forEach((e) => window.removeEventListener(e, attempt, true))
+      document.removeEventListener('visibilitychange', onVisible)
+    }
+
+    const onVisible = () => { if (document.visibilityState === 'visible') attempt() }
+
+    // Capture phase so a gesture still counts even if the target stops propagation.
+    EVENTS.forEach((e) => window.addEventListener(e, attempt, true))
+    document.addEventListener('visibilitychange', onVisible)
+    const first = setTimeout(attempt, 0)
+    const retry = setTimeout(attempt, 600)
+
     return () => {
-      window.removeEventListener('pointerdown', unlockAudio)
-      window.removeEventListener('keydown', unlockAudio)
+      clearTimeout(first)
+      clearTimeout(retry)
+      EVENTS.forEach((e) => window.removeEventListener(e, attempt, true))
+      document.removeEventListener('visibilitychange', onVisible)
     }
   }, [])
 
