@@ -162,7 +162,10 @@ export default function P3Menu({ onNavigate }) {
 
       <div className="p3r-index" aria-hidden="true">0{active + 1}</div>
 
-      <h1 className="p3r-title">Ahmed's Persona</h1>
+      <h1 className="p3r-title" aria-label="Ahmed's Persona">
+        <span className="p3r-title-top">ahmed's</span>
+        <span className="p3r-title-main">persona</span>
+      </h1>
 
       <nav className="p3r-options" aria-label="Main menu">
         {ITEMS.map((item, i) => (
@@ -212,7 +215,8 @@ export default function P3Menu({ onNavigate }) {
         .p3r-index {
           position: absolute;
           left: -4.5rem;
-          top: -18rem;
+          top: auto;
+          bottom: -4rem;
           z-index: 1;
           font-family: 'Rodin Pro', sans-serif;
           font-style: italic;
@@ -229,31 +233,33 @@ export default function P3Menu({ onNavigate }) {
         }
         .p3r-screen.mounted .p3r-index { opacity: 1; }
 
-        /* Title, top-left */
+        /* Title, top-left: the original name tag — Anton italic, tilted, black over grey */
         .p3r-title {
           position: absolute;
-          top: calc(28px + env(safe-area-inset-top, 0px));
-          left: calc(28px + env(safe-area-inset-left, 0px));
+          top: calc(18px + env(safe-area-inset-top, 0px));
+          left: calc(22px + env(safe-area-inset-left, 0px));
           z-index: 4;
           margin: 0;
-          padding: 10px 22px 8px 18px;
-          background: #fff;
-          color: #015FCC;
-          border-radius: 6px;
-          font-family: 'Rodin Pro', sans-serif;
-          font-weight: 800;
+          display: flex;
+          flex-direction: column;
+          align-items: flex-start;
+          font-family: 'Anton', sans-serif;
+          font-weight: 400;
           font-style: italic;
-          font-size: clamp(26px, 3.2vw, 46px);
-          letter-spacing: -0.06em;
-          line-height: 1;
-          white-space: nowrap;
-          transform: rotate(-3deg);
-          transform-origin: left center;
-          box-shadow: 4px 6px 0 rgba(3, 31, 100, 0.55);
+          font-size: clamp(44px, 9vw, 108px);
+          line-height: 0.88;
+          letter-spacing: 2px;
+          transform: rotate(18deg);
+          transform-origin: left top;
+          user-select: none;
+          pointer-events: none;
           opacity: 0;
-          transition: opacity 0.4s ease 0.1s, transform 0.4s cubic-bezier(0.22, 1, 0.36, 1) 0.1s;
+          transition: opacity 0.4s ease 0.1s;
         }
         .p3r-screen.mounted .p3r-title { opacity: 1; }
+        .p3r-title-top { color: rgba(0, 0, 0, 0.86); }
+        .p3r-title-main { color: rgba(10, 10, 14, 0.64); }
+        .p3r-title::after { content: none; }
 
         /* Options column */
         .p3r-options {
@@ -427,8 +433,8 @@ export default function P3Menu({ onNavigate }) {
         }
         @media (max-width: 720px) {
           .p3r-options { left: -3vw; justify-content: center; padding-bottom: 18vh; }
-          .p3r-index { font-size: 26vh; left: -3rem; top: -12rem; }
-          .p3r-title { top: calc(18px + env(safe-area-inset-top, 0px)); left: 16px; font-size: 24px; padding: 8px 14px 6px 12px; }
+          .p3r-index { font-size: 26vh; left: -3rem; top: auto; bottom: -2rem; }
+          .p3r-title { top: calc(10px + env(safe-area-inset-top, 0px)); left: 12px; font-size: 44px; }
           .p3r-desc { font-size: 20px; padding-right: 20px; }
           .p3r-command { font-size: 13px; }
           .p3r-controls { padding-right: 20px; gap: 12px; margin: 10px 0 14px; }
@@ -437,7 +443,7 @@ export default function P3Menu({ onNavigate }) {
         }
         @media (max-height: 520px) {
           .p3r-index { font-size: 30vh; }
-          .p3r-title { top: 12px; left: 14px; font-size: 22px; padding: 6px 12px 5px 10px; }
+          .p3r-title { top: 8px; left: 12px; font-size: 40px; }
           .p3r-desc { font-size: 20px; }
           .p3r-control { font-size: 18px; }
           .p3r-key { min-width: 26px; height: 26px; font-size: 12px; }
