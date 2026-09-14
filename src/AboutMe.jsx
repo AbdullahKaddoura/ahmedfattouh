@@ -260,6 +260,8 @@ export default function AboutMe() {
 
           <div className={`am-main-portrait-shell${mounted ? " mounted" : ""}`}>
             <img className="am-main-portrait-bg" src={MAIN_IMAGES[active]} alt="" aria-hidden="true" />
+            <span className="am-cutin-lines" aria-hidden="true" />
+            <span className="am-cutin-red" aria-hidden="true" />
             <img
               key={active}
               className="am-main-portrait"
@@ -603,7 +605,7 @@ export default function AboutMe() {
         }
         .am-spotlight-empty svg { font-size: 34px; }
         .am-main-portrait-bg { display: none; }
-        .am-cutin-label { display: none; }
+        .am-cutin-label, .am-cutin-lines, .am-cutin-red { display: none; }
         .am-reveal-text { display: flex; flex-direction: column; min-width: 0; }
         .am-reveal-title-line { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
         .am-reveal-meta {
@@ -1096,6 +1098,24 @@ export default function AboutMe() {
             content: ""; position: absolute; z-index: 1;
             left: -12%; right: -12%; top: 76%; height: 4%;
             background: var(--p3-red-accent); transform: rotate(-11deg);
+          }
+          /* layered backing cards behind the face, like the game's cut-ins */
+          .am-cutin-lines, .am-cutin-red {
+            display: block; position: absolute;
+            width: 60vw; height: 94%;
+            clip-path: polygon(18% 0, 100% 0, 100% 100%, 0 100%);
+            animation: am-cutin-in 0.45s cubic-bezier(0.22, 1, 0.36, 1) both;
+          }
+          .am-cutin-lines {
+            z-index: 1; right: 2vw; top: 9%;
+            background: repeating-linear-gradient(-32deg, var(--p3-red-accent) 0 5px, transparent 5px 16px);
+            opacity: 0.9;
+            animation-delay: 0.08s;
+          }
+          .am-cutin-red {
+            z-index: 1; right: -1vw; top: 6%;
+            background: var(--p3-red-accent);
+            animation-delay: 0.04s;
           }
           .am-main-portrait {
             position: absolute; z-index: 2;

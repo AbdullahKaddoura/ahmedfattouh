@@ -126,8 +126,8 @@ export default function Socials() {
         /* ── Each bar ── */
         .sc-bar {
           position: relative;
-          width: min(62vw, 900px);
-          height: 82px;
+          width: min(46vw, 680px);
+          height: 64px;
           transition: height 0.3s cubic-bezier(0.22,1,0.36,1), transform 0.22s ease, box-shadow 0.22s ease, background 0.22s ease;
           background: #111;
           cursor: pointer;
@@ -149,8 +149,8 @@ export default function Socials() {
           transform: translateX(-48px);
           transition: opacity 0.4s ease, transform 0.4s cubic-bezier(0.22, 1, 0.36, 1);
         }
-        .sc-bar-outer.active .sc-bar     { height: 116px; }
-        .sc-bar-outer.active .sc-bar-red { height: 116px; }
+        .sc-bar-outer.active .sc-bar     { height: 90px; }
+        .sc-bar-outer.active .sc-bar-red { height: 90px; }
         .sc-bar-outer.mounted { opacity: 1; transform: translateX(0); }
         .sc-bar-outer:nth-child(1) { transition-delay: 0ms; }
         .sc-bar-outer:nth-child(2) { transition-delay: 80ms; }
@@ -160,8 +160,8 @@ export default function Socials() {
         .sc-bar-red {
           position: absolute;
           top: 0; left: 0;
-          width: min(62vw, 900px);
-          height: 82px;
+          width: min(46vw, 680px);
+          height: 64px;
           background: #c4001a;
           clip-path: polygon(50% 0, 100% 0, 100% 100%, calc(50% - 10px) 100%);
           transform: translateY(-7px);
@@ -228,7 +228,7 @@ export default function Socials() {
           align-items: center;
           flex-shrink: 0;
           font-family: 'Anton', sans-serif;
-          font-size: clamp(2.2rem, 4.4vw, 4.5rem);
+          font-size: clamp(1.8rem, 3.2vw, 3.1rem);
           letter-spacing: -2px;
           color: #ffffff;
           transform: rotate(-30deg);
@@ -253,8 +253,8 @@ export default function Socials() {
         }
 
         .sc-icon {
-          font-size: clamp(1.4rem, 2.2vw, 2.25rem);
-          width: 42px;
+          font-size: clamp(1.1rem, 1.6vw, 1.6rem);
+          width: 34px;
           display: flex;
           align-items: center;
           justify-content: center;
@@ -267,8 +267,8 @@ export default function Socials() {
 
         .sc-label {
           font-family: 'Bebas Neue', sans-serif;
-          font-size: clamp(2rem, 3.2vw, 3.1rem);
-          letter-spacing: 6px;
+          font-size: clamp(1.5rem, 2.2vw, 2.1rem);
+          letter-spacing: 4px;
           line-height: 1;
           color: rgba(255,255,255,0.85);
           transition: color 0.2s ease, transform 0.2s ease;
@@ -310,10 +310,10 @@ export default function Socials() {
         .sc-char {
           position: absolute;
           top: 0;
-          left: 110px;
+          left: 100px;
           height: 100%;
           width: auto;
-          max-width: 190px;
+          max-width: 150px;
           object-fit: cover;
           object-position: left top;
           pointer-events: none;
@@ -340,7 +340,7 @@ export default function Socials() {
         }
         .sc-right-nav .sc-nav-btn {
           font-family: 'Bebas Neue', sans-serif;
-          font-size: 100px;
+          font-size: 64px;
           letter-spacing: 3px;
           line-height: 1;
           user-select: none;
@@ -353,7 +353,7 @@ export default function Socials() {
         }
         .sc-right-nav .sc-nav-label {
           font-family: 'Bebas Neue', sans-serif;
-          font-size: 28px;
+          font-size: 22px;
           letter-spacing: 3px;
           line-height: 1;
           user-select: none;
@@ -379,8 +379,8 @@ export default function Socials() {
         .sc-info-bar-wrap {
           position: fixed;
           right: 0;
-          left: 55%;
-          height: 72px;
+          left: 58%;
+          height: 58px;
           background: rgba(17,17,17,0.94);
           pointer-events: all;
           cursor: pointer;
@@ -426,7 +426,7 @@ export default function Socials() {
         .sc-info-bar-text {
           flex: 1;
           font-family: 'Bebas Neue', sans-serif;
-          font-size: clamp(1.4rem, 2.2vw, 2.2rem);
+          font-size: clamp(1.1rem, 1.6vw, 1.5rem);
           letter-spacing: 2px;
           color: #ffffff;
           font-weight: 700;
@@ -440,7 +440,7 @@ export default function Socials() {
 
         .sc-info-bar-count {
           font-family: 'Bebas Neue', sans-serif;
-          font-size: 34px;
+          font-size: 26px;
           letter-spacing: 1px;
           color: #ffffff;
           flex-shrink: 0;
@@ -478,7 +478,7 @@ export default function Socials() {
         .sc-edit-wrap {
           position: fixed;
           right: 28px;
-          top: 330px;
+          top: 258px;
           z-index: 50;
           pointer-events: none;
         }
@@ -538,10 +538,10 @@ export default function Socials() {
             font-size: clamp(1.4rem, 6vw, 2.1rem);
             letter-spacing: 3px;
           }
-          .sc-main-top { padding-right: 24px !important; }
+          .sc-main-top { padding-right: 16px !important; padding-left: 64px; }
           .sc-char {
-            left: 72px;
-            max-width: 100px;
+            left: 60px;
+            max-width: 86px;
           }
           .sc-right-nav { top: calc(14px + env(safe-area-inset-top, 0px)); right: auto; left: 4vw; gap: 4px; }
           .sc-right-nav .sc-nav-btn { font-size: 44px; padding: 0 4px; }
@@ -603,7 +603,7 @@ export default function Socials() {
               <div className="sc-bar-content">
                 <div className="sc-role">{ROLES[i].text}</div>
                 <div className="sc-main">
-                  <div className="sc-main-top" style={{ paddingRight: '120px' }}>
+                  <div className="sc-main-top" style={{ paddingRight: '90px' }}>
                     <div className="sc-icon" aria-hidden="true"><item.icon /></div>
                     <div className="sc-label">{item.label}</div>
                   </div>
@@ -628,7 +628,7 @@ export default function Socials() {
         <div
           className={`sc-info-bar-wrap${activeInfoBar === i ? " selected" : ""}`}
           key={`bar-${active}-${i}`}
-          style={{ top: `${155 + i * 82}px`, animationDelay: `${i * 50}ms`, "--i": i }}
+          style={{ top: `${118 + i * 66}px`, animationDelay: `${i * 50}ms`, "--i": i }}
           onClick={() => setActiveInfoBar(i)}
           onMouseEnter={() => setActiveInfoBar(i)}
         >
@@ -639,7 +639,7 @@ export default function Socials() {
               flex: 1,
               textAlign: 'right',
               marginRight: '20px',
-              fontSize: detail.value.length > 18 ? '26px' : '34px'
+              fontSize: detail.value.length > 18 ? '20px' : '26px'
             }}>
               {detail.value}
             </span>

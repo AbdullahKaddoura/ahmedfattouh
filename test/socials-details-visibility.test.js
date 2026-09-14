@@ -7,5 +7,5 @@ test('social detail bars use an opaque high-contrast treatment', async () => {
 
   assert.match(socialsSource, /background: rgba\(17,17,17,0\.94\)/)
   assert.match(socialsSource, /color: #ffffff;/)
-  assert.match(socialsSource, /font-size: clamp\(1\.4rem, 2\.2vw, 2\.2rem\)/)
+  assert.match(socialsSource, /font-size: clamp\(1\.1rem, 1\.6vw, 1\.5rem\)/)
 })
