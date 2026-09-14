@@ -315,7 +315,7 @@ export default function Socials() {
           width: auto;
           max-width: 190px;
           object-fit: cover;
-          object-position: top;
+          object-position: left top;
           pointer-events: none;
           z-index: 3;
           clip-path: polygon(20px 0%, 100% 0%, calc(100% - 20px) 100%, 0% 100%);
@@ -520,6 +520,9 @@ export default function Socials() {
           outline: none;
         }
 
+        @media (max-width: 720px) and (orientation: portrait) {
+          #menu-screen > video { object-position: 70% 50%; }
+        }
         /* Phones in portrait: party bars in the upper half, detail rows stacked underneath. */
         @media (max-width: 720px) {
           .sc-root { gap: 10px; justify-content: flex-start; padding-top: 16vh; }

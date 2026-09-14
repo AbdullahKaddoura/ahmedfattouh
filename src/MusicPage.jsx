@@ -104,6 +104,18 @@ export default function MusicPage() {
   const [durations, setDurations] = useState({});
   const [lastVolume, setLastVolume] = useState(1);
   const [listHidden, setListHidden] = useState(false);
+  const [listAnim, setListAnim] = useState(""); // "" | "leaving" | "entering"
+  const toggleList = () => {
+    if (listAnim) return;
+    if (!listHidden) {
+      setListAnim("leaving");
+      setTimeout(() => { setListHidden(true); setListAnim(""); }, 560);
+    } else {
+      setListHidden(false);
+      setListAnim("entering");
+      setTimeout(() => setListAnim(""), 800);
+    }
+  };
   const progressRef = useRef(null);
   const videoRef = useRef(null);
   const currentRowRef = useRef(null);
@@ -165,7 +177,7 @@ export default function MusicPage() {
       if (e.key === "ArrowUp") { e.preventDefault(); setCursor((cursor - 1 + tracks.length) % tracks.length); }
       if (e.key === "ArrowDown") { e.preventDefault(); setCursor((cursor + 1) % tracks.length); }
       if (e.key === "Enter") player.selectTrack(tracks[cursor]);
-      if (e.key === "l" || e.key === "L") setListHidden((h) => !h);
+      if (e.key === "l" || e.key === "L") toggleList();
       if (e.key === "ArrowRight") player.seekBy(5);
       if (e.key === "ArrowLeft") player.seekBy(-5);
       if (e.key === "Escape" || e.key === "Backspace") navigate("/");
@@ -259,25 +271,74 @@ export default function MusicPage() {
         }
         .mu-list-toggle:hover { background: var(--p3-blue-light); color: #000; }
         .mu-list-toggle:focus-visible { outline: 3px solid #fff; outline-offset: -4px; }
-        .mu-list.hidden { display: none; }
 
         /* ── Track list (left) ── */
-        .mu-list {
+        .mu-list-wrap {
           position: absolute;
           left: 0;
           top: 19vh;
+          max-height: 66vh;
+          width: min(46vw, 640px);
+          z-index: 10;
+          display: flex;
+        }
+        .mu-list-wrap.hidden { display: none; }
+        .mu-sweep {
+          position: absolute;
+          inset: 0;
+          overflow: hidden;
+          pointer-events: none;
+          z-index: 3;
+        }
+        .mu-sweep-bar {
+          position: absolute;
+          top: -10%;
+          bottom: -10%;
+          left: 0;
+          width: 38%;
+          background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.95) 42%, rgba(255,255,255,0.95) 58%, transparent 100%);
+          box-shadow: 14px 0 0 rgba(196, 0, 26, 0.9);
+          transform: translateX(-140%) skewX(-20deg);
+          opacity: 0;
+        }
+        .mu-list-wrap.leaving .mu-sweep-bar,
+        .mu-list-wrap.entering .mu-sweep-bar { animation: mu-sweep 0.55s cubic-bezier(0.6, 0, 0.3, 1) both; }
+        @keyframes mu-sweep {
+          0%   { transform: translateX(-140%) skewX(-20deg); opacity: 1; }
+          100% { transform: translateX(330%) skewX(-20deg); opacity: 1; }
+        }
+        .mu-list-wrap.leaving .mu-track {
+          animation: mu-row-out 0.42s cubic-bezier(0.6, 0, 0.4, 1) both;
+          animation-delay: calc(var(--i, 0) * 32ms);
+        }
+        .mu-list-wrap.entering .mu-track {
+          animation: mu-row-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+          animation-delay: calc(80ms + var(--i, 0) * 42ms);
+        }
+        @keyframes mu-row-out {
+          0%   { opacity: 1; transform: translateX(0) skewX(0); }
+          100% { opacity: 0; transform: translateX(-125%) skewX(-18deg); }
+        }
+        @keyframes mu-row-in {
+          0%   { opacity: 0; transform: translateX(-125%) skewX(-18deg); }
+          65%  { opacity: 1; transform: translateX(5%) skewX(4deg); }
+          100% { opacity: 1; transform: translateX(0) skewX(0); }
+        }
+        .mu-list {
+          flex: 1 1 auto;
+          min-height: 0;
           max-height: 66vh;
           overflow-y: auto;
           overflow-x: hidden;
           scrollbar-width: thin;
           scrollbar-color: rgba(141,246,255,0.6) transparent;
           padding: 10px 14px 10px 0;
-          z-index: 10;
+          margin: 0;
           display: flex;
           flex-direction: column;
           gap: 6px;
           list-style: none;
-          width: min(46vw, 640px);
+          width: 100%;
           mask-image: linear-gradient(180deg, transparent 0, #000 12px, #000 calc(100% - 16px), transparent 100%);
           -webkit-mask-image: linear-gradient(180deg, transparent 0, #000 12px, #000 calc(100% - 16px), transparent 100%);
         }
@@ -657,7 +718,7 @@ export default function MusicPage() {
         }
 
         @media (max-width: 1100px) {
-          .mu-list { width: 50vw; }
+          .mu-list-wrap { width: 50vw; }
           .mu-stage { width: 46vw; right: 2vw; }
           .mu-disc { width: 96px; height: 96px; }
           .mu-panel { padding-right: 60px; }
@@ -673,16 +734,15 @@ export default function MusicPage() {
           .mu-head { position: static; transform: none; margin: 0 0 8px 2px; gap: 0; }
           .mu-head-eyebrow { font-size: 11px; }
           .mu-head-title { font-size: 38px; letter-spacing: 3px; }
-          .mu-list {
-            position: static;
+          .mu-list-wrap {
+            position: relative;
+            top: auto; left: auto;
             flex: 1 1 auto;
             min-height: 0;
             max-height: none;
             width: 100%;
-            transform: none;
-            padding: 6px 8px 6px 0;
-            gap: 4px;
           }
+          .mu-list { max-height: none; padding: 6px 8px 6px 0; gap: 4px; }
           .mu-track-btn { height: 46px; min-height: 46px; padding: 0 18px 0 12px; gap: 10px; }
           .mu-track.current .mu-track-btn { height: 54px; }
           .mu-track-num { font-size: 22px; min-width: 28px; }
@@ -714,7 +774,8 @@ export default function MusicPage() {
           .mu-head { top: 2vh; left: 3vw; }
           .mu-head-eyebrow { display: none; }
           .mu-head-title { font-size: 40px; }
-          .mu-list { top: 17vh; max-height: 66vh; width: 46vw; gap: 4px; }
+          .mu-list-wrap { top: 17vh; max-height: 66vh; width: 46vw; }
+          .mu-list { max-height: 66vh; gap: 4px; }
           .mu-track-btn { height: 44px; padding: 0 22px 0 16px; gap: 10px; }
           .mu-track.current .mu-track-btn { height: 52px; }
           .mu-track-num { font-size: 20px; min-width: 26px; }
@@ -732,7 +793,8 @@ export default function MusicPage() {
           .mu-footer { display: none; }
         }
         @media (prefers-reduced-motion: reduce) {
-          .mu-stage.mounted .mu-panel, .mu-disc, .mu-viz-fallback span, .mu-track-eq span { animation: none !important; }
+          .mu-stage.mounted .mu-panel, .mu-disc, .mu-viz-fallback span, .mu-track-eq span,
+          .mu-sweep-bar, .mu-list-wrap.leaving .mu-track, .mu-list-wrap.entering .mu-track { animation: none !important; }
           .mu-stage.mounted .mu-panel { opacity: 1; }
           .mu-track, .mu-track-btn, .mu-head, .mu-backplate { transition: none; }
         }
@@ -741,12 +803,13 @@ export default function MusicPage() {
       <header className={`mu-head${mounted ? " mounted" : ""}`}>
         <span className="mu-head-eyebrow">SOUNDTRACK</span>
         <h1 className="mu-head-title">MUSIC</h1>
-        <button type="button" className="mu-list-toggle" onClick={() => setListHidden((h) => !h)} aria-pressed={listHidden}>
+        <button type="button" className="mu-list-toggle" onClick={toggleList} aria-pressed={listHidden}>
           {listHidden ? "▸ SHOW LIST" : "▾ HIDE LIST"}
         </button>
       </header>
 
-      <ol className={`mu-list${listHidden ? " hidden" : ""}`} aria-label="Tracks">
+      <div className={`mu-list-wrap${listHidden ? " hidden" : ""}${listAnim ? ` ${listAnim}` : ""}`}>
+      <ol className="mu-list" aria-label="Tracks">
         {tracks.map((track, i) => {
           const isCurrent = current?.id === track.id;
           return (
@@ -754,7 +817,7 @@ export default function MusicPage() {
               key={track.id}
               ref={isCurrent ? currentRowRef : undefined}
               className={`mu-track${mounted ? " mounted" : ""}${isCurrent ? " current" : ""}${cursor === i ? " cursor" : ""}${isCurrent && isPlaying ? " playing" : ""}`}
-              style={{ transitionDelay: mounted ? `${60 + i * 55}ms` : "0ms" }}
+              style={{ transitionDelay: mounted ? `${60 + i * 55}ms` : "0ms", "--i": i }}
             >
               <div className="mu-track-red" aria-hidden="true" />
               <button
@@ -777,6 +840,8 @@ export default function MusicPage() {
           );
         })}
       </ol>
+      <div className="mu-sweep" aria-hidden="true"><div className="mu-sweep-bar" /></div>
+      </div>
 
       <div className={`mu-stage${mounted ? " mounted" : ""}`}>
         <div className="mu-backplate" aria-hidden="true" />

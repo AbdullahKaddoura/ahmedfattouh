@@ -422,6 +422,9 @@ export default function P3Menu({ onNavigate }) {
         @media (max-width: 1100px) {
           .p3r-options { left: 24vw; }
         }
+        @media (max-width: 720px) and (orientation: portrait) {
+          .p3r-bg { object-position: 10% 50%; }
+        }
         @media (max-width: 720px) {
           .p3r-options { left: -3vw; justify-content: center; padding-bottom: 18vh; }
           .p3r-index { font-size: 26vh; left: -3rem; top: -12rem; }

@@ -476,6 +476,9 @@ export default function FuturePersonaPage() {
         .fp-dot { width: 10px; height: 10px; border-radius: 50%; background: #fff; display: inline-block; }
         .fp-hint-keys { font-size: 13px; letter-spacing: 2px; opacity: 0.55; }
 
+        @media (max-width: 720px) and (orientation: portrait) {
+          .fp-video, .fp-entry-video { object-position: 55% 50%; }
+        }
         /* Phones in portrait: the scattered layout can't fit, so the squares stack in a column. */
         @media (max-width: 720px) {
           .fp-nodes {

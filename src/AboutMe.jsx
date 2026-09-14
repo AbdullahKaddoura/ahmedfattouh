@@ -982,7 +982,7 @@ export default function AboutMe() {
           width: auto;
           max-width: 160px;
           object-fit: cover;
-          object-position: top;
+          object-position: left top;
           pointer-events: none;
           z-index: 3;
           clip-path: polygon(20px 0%, 100% 0%, calc(100% - 20px) 100%, 0% 100%);
@@ -1073,7 +1073,7 @@ export default function AboutMe() {
             order: 0;
             flex: 0 0 38%;
             overflow: hidden;
-            background: #05081c;
+            background: transparent;
             width: 100%;
             height: auto;
             top: auto; right: auto; left: auto;
@@ -1083,10 +1083,10 @@ export default function AboutMe() {
             box-shadow: none;
             z-index: 1;
           }
-          .am-main-portrait-bg {
-            display: block; position: absolute; inset: -15%; width: 130%; height: 130%;
-            object-fit: cover; filter: blur(34px) saturate(1.7) brightness(0.95);
-          }
+          /* the live theme video shows through the band; no blurred copy */
+          .am-main-portrait-bg { display: none; }
+          #menu-screen > video { object-position: 75% 50%; }
+          .am-dim { background: linear-gradient(180deg, rgba(3, 8, 40, 0.12) 0%, rgba(3, 8, 40, 0.3) 40%, rgba(3, 8, 40, 0.6) 100%); }
           .am-main-portrait-shell::before {
             content: ""; position: absolute; z-index: 1;
             left: -12%; right: -12%; top: 60%; height: 13%;
