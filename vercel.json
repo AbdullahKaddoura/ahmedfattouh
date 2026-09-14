@@ -1,0 +1,5 @@
+{
+  "rewrites": [
+    { "source": "/((?!api/|uploads/|assets/|about/|fonts/|sfx/).*)", "destination": "/index.html" }
+  ]
+}

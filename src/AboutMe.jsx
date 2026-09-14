@@ -716,7 +716,7 @@ export default function AboutMe() {
           align-items: center;
           gap: 16px;
           min-height: 68px;
-          padding: 8px 20px 8px 20px;
+          padding: 8px 36px 8px 20px;
           background: rgba(0, 0, 0, 0.78);
           clip-path: polygon(14px 0, 100% 0, calc(100% - 14px) 100%, 0 100%);
           border-left: 3px solid var(--p3-red-accent);
@@ -739,7 +739,8 @@ export default function AboutMe() {
           clip-path: polygon(6px 0, 100% 0, calc(100% - 6px) 100%, 0 100%);
         }
         .am-reveal-lower-icon > svg { width: 22px; height: 22px; }
-        .am-reveal-lower-text { flex: 1; min-width: 0; }
+        .am-reveal-lower-text { flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+        .am-reveal-counter { flex-shrink: 0; }
         .am-reveal-counter {
           display: inline-flex;
           align-items: baseline;
@@ -1035,9 +1036,10 @@ export default function AboutMe() {
         }
         @media (max-width: 720px) {
           .am-bar, .am-bar-red { width: 94vw; }
-          .am-main { padding-left: 24px; }
+          .am-main { padding-left: 0; }
+          .am-main-top { padding-left: 64px; }
           .am-role { font-size: 32px; }
-          .am-char { left: 72px; max-width: 105px; }
+          .am-char { left: 60px; max-width: 86px; }
           .am-label { font-size: 22px; letter-spacing: 1px; }
           .am-reveal-frame { left: 2vw; width: 90vw; max-height: 80vh; }
           .am-reveal-panel { min-height: 40vh; max-height: 80vh; }
@@ -1048,7 +1050,10 @@ export default function AboutMe() {
           .am-tab-navigation { gap: 4px; flex-wrap: wrap; }
           .am-tab-button { font-size: 12px; padding: 6px 10px; min-height: 32px; }
           .am-reveal-upper-bar { padding: 14px 22px 14px 14px; }
-          .am-reveal-lower-bar { gap: 10px; font-size: 18px; padding: 8px 12px; min-height: 56px; }
+          .am-reveal-lower-bar { gap: 8px; font-size: 15px; padding: 6px 30px 6px 10px; min-height: 50px; }
+          .am-reveal-lower-bar .pm-edit-trigger { min-height: 32px; padding: 4px 10px; font-size: 14px; letter-spacing: 1px; }
+          .am-reveal-counter { font-size: 16px; gap: 4px; }
+          .am-reveal-counter-cur { font-size: 22px; }
           .am-favorites-content { padding: 12px 20px 12px 12px; }
           .am-gallery { grid-template-columns: 1fr; gap: 14px; }
           .am-spotlight { width: 100%; flex-direction: row; align-items: flex-end; gap: 12px; }

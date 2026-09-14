@@ -123,6 +123,9 @@ Some text on the site can be changed from the site itself by whoever knows the e
 
 The default password is `1509`; set the `EDIT_PASSWORD` environment variable on the server to change it.
 Edits are saved by the Express server into `data/content.json` (created on first save, not committed).
+On Vercel the same API runs as serverless functions (`api/`) backed by Vercel Blob: create a Blob store in
+the project's Storage tab once and edits/uploads persist there. `vercel.json` rewrites page routes to the
+app so refreshing any page works.
 The favicon is `public/favicon.png`. The Future Persona page lives at `/future-persona` (`/resume` redirects there).
 When the site is served without the Express server (for example the Vite dev server or a static host),
 edits are kept in that browser only. For local development with the API, run
